@@ -1890,12 +1890,6 @@ def common_head(title, active_tab):
 def render_filters(platform):
     return f"""
 <div class="filters">
-  <label data-en="Start Date" data-ar="تاريخ البدء">Start Date
-    <input type="date" id="startDate" data-platform="{platform}">
-  </label>
-  <label data-en="End Date" data-ar="تاريخ الانتهاء">End Date
-    <input type="date" id="endDate" data-platform="{platform}">
-  </label>
   <label data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status
     <select id="statusFilter" data-platform="{platform}">
       <option value="all" data-en="All" data-ar="الكل">All</option>
@@ -2672,8 +2666,6 @@ def filter_script():
     return """
 <script>
 function applyFilters(platform){
-  const start = document.getElementById('startDate').value;
-  const end = document.getElementById('endDate').value;
   const status = document.getElementById('statusFilter').value;
   const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
   const tableIds = {
@@ -2695,8 +2687,6 @@ function applyFilters(platform){
   });
 }
 function resetFilters(platform){
-  document.getElementById('startDate').value = '';
-  document.getElementById('endDate').value = '';
   document.getElementById('statusFilter').value = 'all';
   document.getElementById('minSpend').value = '';
   applyFilters(platform);
@@ -2886,9 +2876,9 @@ def main():
 
     pages = {
         "index.html": overview_page(tiktok, meta, google, logo_b64),
-        "tiktok.html": tiktok_page(tiktok, logo_b64) + filter_script(),
-        "meta.html": meta_page(meta, logo_b64) + filter_script(),
-        "google.html": google_page(google, logo_b64) + filter_script(),
+        "tiktok.html": tiktok_page(tiktok, logo_b64),
+        "meta.html": meta_page(meta, logo_b64),
+        "google.html": google_page(google, logo_b64),
     }
 
     for filename, html in pages.items():

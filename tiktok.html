@@ -781,12 +781,6 @@
 <div class="container">
   
 <div class="filters">
-  <label data-en="Start Date" data-ar="تاريخ البدء">Start Date
-    <input type="date" id="startDate" data-platform="tiktok">
-  </label>
-  <label data-en="End Date" data-ar="تاريخ الانتهاء">End Date
-    <input type="date" id="endDate" data-platform="tiktok">
-  </label>
   <label data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status
     <select id="statusFilter" data-platform="tiktok">
       <option value="all" data-en="All" data-ar="الكل">All</option>
@@ -1701,7 +1695,7 @@
     <div class="card"><h2>Worst CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>1860570324600993</td><td>SAR 57.24</td><td>1</td><td>SAR 57.24</td></tr><tr><td>إنشاء عميل محتمل20260611233124</td><td>SAR 105.27</td><td>3</td><td>SAR 35.09</td></tr><tr><td>إنشاء عميل محتمل20260611234527</td><td>SAR 127.07</td><td>4</td><td>SAR 31.77</td></tr><tr><td>1858664765045921</td><td>SAR 55.74</td><td>2</td><td>SAR 27.87</td></tr><tr><td>1862263203340465</td><td>SAR 78.71</td><td>3</td><td>SAR 26.24</td></tr></tbody></table></div></div>
   </div>
 </div>
-<div class="footer" data-en="Generated on 2026-06-18 22:05" data-ar="تم الإنشاء في 2026-06-18 22:05">Generated on 2026-06-18 22:05</div>
+<div class="footer" data-en="Generated on 2026-06-18 22:18" data-ar="تم الإنشاء في 2026-06-18 22:18">Generated on 2026-06-18 22:18</div>
 <script>
 const ttDailyLabels = ["2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-23", "2026-05-24", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-05-30", "2026-05-31", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"];
 const ttDailySpend = [1644.14, 533.21, 1.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1167.82, 1291.84, 384.18, 249.58, 2110.08, 2304.33, 2574.63, 832.46, 0.0, 0.0, 106.4, 167.35, 53.08, 538.5, 704.58, 3723.7, 3000.0, 522.09, 157.39, 30.84];
@@ -1727,8 +1721,6 @@ new Chart(document.getElementById('ttFunnelChart'), {type:'bar', data:{labels:tt
 
 <script>
 function applyFilters(platform){
-  const start = document.getElementById('startDate').value;
-  const end = document.getElementById('endDate').value;
   const status = document.getElementById('statusFilter').value;
   const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
   const tableIds = {
@@ -1750,201 +1742,6 @@ function applyFilters(platform){
   });
 }
 function resetFilters(platform){
-  document.getElementById('startDate').value = '';
-  document.getElementById('endDate').value = '';
-  document.getElementById('statusFilter').value = 'all';
-  document.getElementById('minSpend').value = '';
-  applyFilters(platform);
-}
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const progressFill = document.getElementById('progressFill');
-  function updateProgress() {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-    if (progressFill) progressFill.style.width = pct + '%';
-  }
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  updateProgress();
-
-  const selectors = [
-    ['.card', 'reveal'],
-    ['.kpi', 'reveal reveal-scale'],
-    ['.platform-card', 'reveal'],
-    ['.section-title', 'reveal-left'],
-    ['.filters', 'reveal'],
-    ['.recommendation', 'reveal'],
-    ['.funnel-step', 'reveal'],
-    ['.pull-quote', 'reveal'],
-    ['.metadata-bar', 'reveal']
-  ];
-  selectors.forEach(([sel, classes]) => {
-    document.querySelectorAll(sel).forEach((el, j) => {
-      classes.split(' ').forEach(c => el.classList.add(c));
-      el.classList.add('delay-' + ((j % 8) + 1));
-    });
-  });
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
-  document.querySelectorAll('.reveal, .reveal-scale, .reveal-left').forEach(el => observer.observe(el));
-
-  const counterObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const text = el.textContent;
-        const match = text.match(/([^\d\-]*)(-?[\d,]+(?:\.\d+)?)(.*)/);
-        if (match) {
-          const prefix = match[1], suffix = match[3];
-          const target = parseFloat(match[2].replace(/,/g, ''));
-          if (!isNaN(target)) {
-            const duration = 1600;
-            const start = performance.now();
-            const isInt = Number.isInteger(target);
-            function step(now) {
-              const p = Math.min((now - start) / duration, 1);
-              const eased = 1 - Math.pow(1 - p, 3);
-              const current = target * eased;
-              let formatted = isInt
-                ? Math.round(current).toLocaleString()
-                : current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-              el.textContent = prefix + formatted + suffix;
-              if (p < 1) requestAnimationFrame(step);
-            }
-            requestAnimationFrame(step);
-          }
-        }
-        counterObserver.unobserve(el);
-      }
-    });
-  }, { threshold: 0.5 });
-  document.querySelectorAll('.kpi-value').forEach(el => counterObserver.observe(el));
-});
-</script>
-
-<script>
-(function() {
-  const DICT = {
-    "Overview": "نظرة عامة", "TikTok": "تيك توك", "Meta": "ميتا", "Google Ads": "إعلانات جوجل",
-    "White Car Ads Audit": "تدقيق إعلانات وايت كار",
-    "Start Date": "تاريخ البدء", "End Date": "تاريخ الانتهاء", "Campaign Status": "حالة الحملة",
-    "Min Spend (SAR)": "الحد الأدنى للإنفاق (ر.س)", "Apply Filters": "تطبيق الفلاتر", "Reset": "إعادة تعيين",
-    "All": "الكل", "Active / Enabled": "نشط / مفعّل", "Paused / Disabled": "متوقف / معطل",
-    "Active": "نشط", "Paused": "متوقف", "Unknown": "غير معروف",
-    "Total Spend": "إجمالي الإنفاق", "Total Conversions": "إجمالي التحويلات", "Blended CPA": "متوسط تكلفة التحويل", "Platforms": "المنصات",
-    "Spend": "الإنفاق", "Conversions": "التحويلات", "Impressions": "الظهور", "Clicks": "النقرات",
-    "CTR": "معدل النقر", "CPC": "تكلفة النقرة", "CPA": "تكلفة التحويل", "Reach": "الوصول",
-    "Conv. Value": "قيمة التحويل", "ROAS": "العائد على الإنفاق", "Campaigns": "الحملات",
-    "Lifetime Spend": "إجمالي الإنفاق", "Video VTR": "معدل مشاهدة الفيديو", "Completion": "الاكتمال", "Conv. Rate": "معدل التحويل",
-    "Campaign": "الحملة", "Status": "الحالة", "Objective": "الهدف", "Impr.": "الظهور", "Conv.": "التحويل",
-    "Spend Share": "حصة الإنفاق", "Conversions by Platform": "التحويلات حسب المنصة", "Conversions by Campaign": "التحويلات حسب الحملة",
-    "CPA by Platform": "تكلفة التحويل حسب المنصة", "Spend vs Conversions": "الإنفاق مقابل التحويلات",
-    "Spend by Campaign": "الإنفاق حسب الحملة", "Monthly Trend": "الاتجاه الشهري", "Device Breakdown": "التفصيل حسب الجهاز",
-    "Day-of-Week CPA Heatmap": "خريطة حرارية لتكلفة التحويل حسب اليوم", "Age & Gender": "العمر والجنس", "Region": "المنطقة",
-    "Hourly Performance": "الأداء حسب الساعة", "Top Campaigns": "أهم الحملات", "Top Spend Campaigns by Platform": "أعلى الحملات إنفاقًا حسب المنصة",
-    "Campaign Classification": "تصنيف الحملات", "Scale Winners": "الرابحون القابلون للتوسع", "Expensive Volume": "حجم مكلف", "Poor Signal": "إشارة ضعيفة",
-    "Platform Mix & Efficiency": "مزيج المنصات والكفاءة", "Platform Mix & Dependency Risk": "مزيج المنصات ومخاطر الاعتماد",
-    "Lead Quality & CRM Funnel": "جودة العملاء المحتملين وقمع CRM", "Data Quality Issues": "مشكلات جودة البيانات",
-    "Strategic Recommendations": "التوصيات الاستراتيجية", "14-Day Action Roadmap": "خطة العمل لمدة 14 يومًا",
-    "Tracking & Measurement Gaps": "فجوات التتبع والقياس", "Executive Summary": "الملخص التنفيذي",
-    "TikTok Ads Deep Dive": "تحليل عميق لإعلانات تيك توك", "Meta Ads Deep Dive": "تحليل عميق لإعلانات ميتا", "Google Ads Deep Dive": "تحليل عميق لإعلانات جوجل",
-    "Performance Deep Dive": "تحليل الأداء العميق", "Creative Performance": "أداء الإبداع", "Timing & Efficiency": "التوقيت والكفاءة", "Audience Performance": "أداء الجمهور",
-    "Anomalies & Red Flags": "الحالات الشاذة والعلامات الحمراء",
-    "No campaign data available.": "لا توجد بيانات حملات متاحة.", "No data available.": "لا توجد بيانات متاحة.",
-    "Reporting period": "فترة الإبلاغ", "Data source": "مصدر البيانات", "Attribution": "النسبة", "Conversion definition": "تعريف التحويل",
-    "Platform default attribution windows": "نوافذ النسبة الافتراضية للمنصة",
-    "TikTok: Lead Generation form submits · Meta: Lead / messaging / form actions · Google: Form/call conversions": "تيك توك: إرسالات نموذج جلب العملاء · ميتا: عملاء / رسائل / إجراءات النموذج · جوجل: تحويلات النموذج/المكالمات",
-    "Key insight from the audit": "رؤية رئيسية من التدقيق",
-    "Advertiser:": "المعلن:", "Account:": "الحساب:", "Objective:": "الهدف:",
-    "Lead Generation": "جلب العملاء المحتملين", "Lead Generation / Conversations": "جلب العملاء / المحادثات",
-    "High-intent search & Performance Max": "بحث عالي النية و Performance Max",
-    "Google": "جوجل", "TikTok": "تيك توك", "Meta": "ميتا",
-    "Scale / volume driver": "محرك النطاق والحجم", "Audience test / retarget": "اختبار الجمهور / إعادة الاستهداف", "High-intent capture": "التقاط النية العالية",
-    "View TikTok deep dive →": "عرض تحليل تيك توك العميق →", "View Meta deep dive →": "عرض تحليل ميتا العميق →", "View Google deep dive →": "عرض تحليل جوجل العميق →",
-    "Generated on": "تم الإنشاء في"
-  };
-  const REVERSE = Object.fromEntries(Object.entries(DICT).map(([k, v]) => [v, k]));
-
-  function translateTree(lang) {
-    const map = lang === 'ar' ? DICT : REVERSE;
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-    const nodes = [];
-    let node;
-    while ((node = walker.nextNode())) {
-      if (!node.parentElement) continue;
-      if (node.parentElement.hasAttribute('data-en') || node.parentElement.closest('[data-en]')) continue;
-      const tag = node.parentElement.tagName;
-      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
-      nodes.push(node);
-    }
-    nodes.forEach(node => {
-      let text = node.textContent;
-      Object.keys(map).forEach(key => {
-        text = text.split(key).join(map[key]);
-      });
-      node.textContent = text;
-    });
-  }
-
-  const langToggle = document.getElementById('langToggle');
-  function setLang(lang) {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    localStorage.setItem('wc-lang', lang);
-    document.querySelectorAll('[data-en][data-ar]').forEach(el => {
-      el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.en;
-    });
-    translateTree(lang);
-    if (langToggle) langToggle.textContent = lang === 'ar' ? langToggle.dataset.ar : langToggle.dataset.en;
-  }
-  if (langToggle) {
-    langToggle.addEventListener('click', () => {
-      const newLang = document.documentElement.lang === 'ar' ? 'en' : 'ar';
-      setLang(newLang);
-    });
-  }
-  const savedLang = localStorage.getItem('wc-lang') || 'en';
-  if (savedLang === 'ar') setLang('ar');
-})();
-</script>
-
-<script>
-function applyFilters(platform){
-  const start = document.getElementById('startDate').value;
-  const end = document.getElementById('endDate').value;
-  const status = document.getElementById('statusFilter').value;
-  const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
-  const tableIds = {
-    tiktok: 'tiktokCampaignsTable',
-    meta: 'metaCampaignsTable',
-    google: 'googleCampaignsTable'
-  };
-  const table = document.getElementById(tableIds[platform]);
-  if(!table) return;
-  const rows = table.querySelectorAll('tbody tr');
-  rows.forEach(row => {
-    let show = true;
-    const rowStatus = row.getAttribute('data-status') || '';
-    const rowSpend = parseFloat(row.getAttribute('data-spend') || 0);
-    if(status === 'active' && !(rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
-    if(status === 'inactive' && (rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
-    if(rowSpend < minSpend) show = false;
-    row.style.display = show ? '' : 'none';
-  });
-}
-function resetFilters(platform){
-  document.getElementById('startDate').value = '';
-  document.getElementById('endDate').value = '';
   document.getElementById('statusFilter').value = 'all';
   document.getElementById('minSpend').value = '';
   applyFilters(platform);
