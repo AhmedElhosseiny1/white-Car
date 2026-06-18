@@ -44,6 +44,18 @@ python3 generate_report.py
 open index.html  # or open tiktok.html / meta.html / google.html
 ```
 
+## New Insights
+
+The report now surfaces deeper performance intelligence:
+
+- **CPA as the leading metric** — shown in overview KPIs and a dedicated platform comparison chart.
+- **Top performing weekdays** — ranked by CPA/ROAS for each platform.
+- **Hourly performance** — hour-of-day spend & CPA charts.
+- **Weekday × hour heatmap** — Google Ads has full day-of-week + hour granularity.
+- **Audience breakdowns** — Meta Ads age, gender, and region performance.
+
+> Note: audience/heatmap sections populate when the underlying API data is available. Some dimensions (TikTok age/gender/location, Google Ads age/gender location) are not exposed by the current Pipeboard MCP endpoints.
+
 ## Automation
 
 The included GitHub Actions workflow runs daily at 06:00 UTC and on manual trigger. To enable it:
@@ -51,6 +63,7 @@ The included GitHub Actions workflow runs daily at 06:00 UTC and on manual trigg
 1. Ensure the repo is on GitHub.
 2. Go to **Settings → Secrets and variables → Actions**.
 3. Add a repository secret named `PIPEBOARD_API_TOKEN` with your Pipeboard token.
+4. Note: the free Pipeboard plan has a weekly execution limit; if automation fails with a limit error, upgrade or wait for the weekly reset.
 4. The workflow will fetch fresh data, regenerate both reports, and commit the updates.
 
 ## Customization
