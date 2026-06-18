@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
-"""Generate a self-contained HTML audit report from Pipeboard MCP raw data."""
+"""Generate a branded, multi-tab HTML audit report for TikTok, Meta & Google Ads."""
 
 import json
+import base64
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
 
 OUT_DIR = Path(__file__).parent
 RAW_DIR = OUT_DIR / "raw"
+ASSETS_DIR = OUT_DIR / "assets"
+
+
+def load_logo_base64():
+    logo_path = ASSETS_DIR / "whitecar-logo.png"
+    if logo_path.exists():
+        return base64.b64encode(logo_path.read_bytes()).decode()
+    return ""
 
 
 def parse_mcp(filename):
@@ -41,6 +50,13 @@ def fmt_pct(n, is_tiktok_api_value=False):
         return "-"
 
 
+def safe_div(num, den, default=0):
+    try:
+        return float(num) / float(den) if float(den) else default
+    except (ValueError, TypeError):
+        return default
+
+
 def meta_sum_conversions(actions):
     lead_actions = {
         "onsite_conversion.lead",
@@ -58,6 +74,8 @@ def meta_sum_conversions(actions):
     return total
 
 
+# ===================== ANALYSIS FUNCTIONS =====================
+
 def analyze_tiktok():
     advertiser, _ = parse_mcp("tiktok_advertiser_info.json")
     campaigns_data, _ = parse_mcp("tiktok_campaigns.json")
@@ -66,7 +84,7 @@ def analyze_tiktok():
     camp_insights, _ = parse_mcp("tiktok_insights_campaign.json")
     daily_insights, _ = parse_mcp("tiktok_insights_daily.json")
     ad_insights, _ = parse_mcp("tiktok_insights_ad.json")
-    adgroup_insights, err = parse_mcp("tiktok_insights_adgroup.json")
+    adgroup_insights, _ = parse_mcp("tiktok_insights_adgroup.json")
 
     adv = advertiser["advertiser"]
     campaigns = campaigns_data.get("campaigns", [])
@@ -76,15 +94,8 @@ def analyze_tiktok():
     campaign_map = {c["campaign_id"]: c for c in campaigns}
 
     camp_metrics = camp_insights.get("metrics", [])
-    total_spend = 0.0
-    total_impressions = 0
-    total_clicks = 0
-    total_conversions = 0
-    total_video_plays = 0
-    total_p25 = 0
-    total_p50 = 0
-    total_p75 = 0
-    total_p100 = 0
+    total_spend = total_impressions = total_clicks = total_conversions = 0
+    total_video_plays = total_p25 = total_p50 = total_p75 = total_p100 = 0
     campaign_rows = []
 
     for row in camp_metrics:
@@ -113,26 +124,24 @@ def analyze_tiktok():
         total_p75 += p75
         total_p100 += p100
 
+        c = campaign_map.get(cid, {})
         campaign_rows.append({
-            "campaign_id": cid,
-            "name": campaign_map.get(cid, {}).get("campaign_name", cid),
-            "status": campaign_map.get(cid, {}).get("operation_status", "UNKNOWN"),
-            "objective": campaign_map.get(cid, {}).get("objective_type", "UNKNOWN"),
-            "spend": spend,
-            "impressions": impressions,
-            "clicks": clicks,
-            "conversions": conversions,
-            "ctr": ctr,
-            "cpc": cpc,
-            "cpconv": cpconv,
-            "video_plays": video_plays,
-            "p25": p25, "p50": p50, "p75": p75, "p100": p100,
-            "completion_rate": p100 / video_plays if video_plays else 0,
+            "campaign_id": cid, "name": c.get("campaign_name", cid),
+            "status": c.get("operation_status", "UNKNOWN"),
+            "objective": c.get("objective_type", "UNKNOWN"),
+            "create_time": c.get("create_time", ""),
+            "budget": float(c.get("budget", 0) or 0),
+            "spend": spend, "impressions": impressions, "clicks": clicks,
+            "conversions": conversions, "ctr": ctr, "cpc": cpc, "cpconv": cpconv,
+            "video_plays": video_plays, "p25": p25, "p50": p50, "p75": p75, "p100": p100,
+            "completion_rate": safe_div(p100, video_plays),
+            "vtr": safe_div(video_plays, impressions),
+            "conv_rate": safe_div(conversions, clicks),
         })
 
     top_campaigns = sorted(campaign_rows, key=lambda x: x["spend"], reverse=True)
-    best_cpa_campaigns = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpconv"])[:5]
-    worst_cpa_campaigns = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpconv"], reverse=True)[:5]
+    best_cpa = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpconv"])[:5]
+    worst_cpa = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpconv"], reverse=True)[:5]
 
     ad_metrics = ad_insights.get("metrics", [])
     ad_map = {a["ad_id"]: a for a in ads}
@@ -140,19 +149,22 @@ def analyze_tiktok():
     for row in ad_metrics:
         aid = row["dimensions"]["ad_id"]
         m = row["metrics"]
+        a = ad_map.get(aid, {})
+        spend = float(m.get("spend", 0) or 0)
+        impressions = int(float(m.get("impressions", 0) or 0))
+        clicks = int(float(m.get("clicks", 0) or 0))
+        conversions = int(float(m.get("conversion", 0) or 0))
         ad_rows.append({
-            "ad_id": aid,
-            "name": ad_map.get(aid, {}).get("ad_name", aid),
-            "text": ad_map.get(aid, {}).get("ad_text", ""),
-            "campaign_name": ad_map.get(aid, {}).get("campaign_name", ""),
-            "spend": float(m.get("spend", 0) or 0),
-            "impressions": int(float(m.get("impressions", 0) or 0)),
-            "clicks": int(float(m.get("clicks", 0) or 0)),
-            "conversions": int(float(m.get("conversion", 0) or 0)),
-            "ctr": float(m.get("ctr", 0) or 0),
+            "ad_id": aid, "name": a.get("ad_name", aid), "text": a.get("ad_text", ""),
+            "campaign_name": a.get("campaign_name", ""), "campaign_id": a.get("campaign_id", ""),
+            "status": a.get("operation_status", "UNKNOWN"),
+            "spend": spend, "impressions": impressions, "clicks": clicks, "conversions": conversions,
+            "ctr": float(m.get("ctr", 0) or 0), "cpc": float(m.get("cpc", 0) or 0),
+            "cpconv": float(m.get("cost_per_conversion", 0) or 0),
+            "conv_rate": safe_div(conversions, clicks),
         })
-    top_ads = sorted(ad_rows, key=lambda x: x["spend"], reverse=True)[:10]
-    best_ads_by_ctr = sorted([a for a in ad_rows if a["impressions"] > 1000], key=lambda x: x["ctr"], reverse=True)[:5]
+    top_ads = sorted(ad_rows, key=lambda x: x["spend"], reverse=True)
+    best_ads_ctr = sorted([a for a in ad_rows if a["impressions"] > 1000], key=lambda x: x["ctr"], reverse=True)[:5]
 
     adgroup_rows = []
     if adgroup_insights:
@@ -166,29 +178,23 @@ def analyze_tiktok():
             conversions = int(float(m.get("conversion", 0) or 0))
             p100 = int(float(m.get("video_views_p100", 0) or 0))
             adgroup_rows.append({
-                "adgroup_id": agid,
-                "name": ag.get("adgroup_name", agid),
-                "campaign_name": ag.get("campaign_name", ""),
-                "spend": spend,
-                "impressions": impressions,
-                "clicks": int(float(m.get("clicks", 0) or 0)),
-                "conversions": conversions,
-                "ctr": float(m.get("ctr", 0) or 0),
-                "cpc": float(m.get("cpc", 0) or 0),
-                "cpconv": float(m.get("cost_per_conversion", 0) or 0),
-                "video_plays": video_plays,
-                "completion_rate": p100 / video_plays if video_plays else 0,
-                "vtr": video_plays / impressions if impressions else 0,
+                "adgroup_id": agid, "name": ag.get("adgroup_name", agid),
+                "campaign_name": ag.get("campaign_name", ""), "campaign_id": ag.get("campaign_id", ""),
+                "status": ag.get("operation_status", "UNKNOWN"),
+                "spend": spend, "impressions": impressions, "clicks": int(float(m.get("clicks", 0) or 0)),
+                "conversions": conversions, "ctr": float(m.get("ctr", 0) or 0),
+                "cpc": float(m.get("cpc", 0) or 0), "cpconv": float(m.get("cost_per_conversion", 0) or 0),
+                "video_plays": video_plays, "completion_rate": safe_div(p100, video_plays),
+                "vtr": safe_div(video_plays, impressions), "conv_rate": safe_div(conversions, clicks),
             })
-    top_adgroups = sorted(adgroup_rows, key=lambda x: x["spend"], reverse=True)[:10]
+    top_adgroups = sorted(adgroup_rows, key=lambda x: x["spend"], reverse=True)
 
     daily_rows = []
     for row in daily_insights.get("metrics", []):
         day = row["dimensions"]["stat_time_day"][:10]
         m = row["metrics"]
         daily_rows.append({
-            "day": day,
-            "spend": float(m.get("spend", 0) or 0),
+            "day": day, "spend": float(m.get("spend", 0) or 0),
             "impressions": int(float(m.get("impressions", 0) or 0)),
             "clicks": int(float(m.get("clicks", 0) or 0)),
             "conversions": int(float(m.get("conversion", 0) or 0)),
@@ -212,13 +218,10 @@ def analyze_tiktok():
     for dow in dow_order:
         if dow in dow_spend:
             dow_rows.append({
-                "day": dow,
-                "spend": dow_spend[dow],
-                "conversions": dow_conv[dow],
-                "clicks": dow_clicks[dow],
-                "impressions": dow_impressions[dow],
-                "ctr": dow_clicks[dow] / dow_impressions[dow] if dow_impressions[dow] else 0,
-                "cpa": dow_spend[dow] / dow_conv[dow] if dow_conv[dow] else 0,
+                "day": dow, "spend": dow_spend[dow], "conversions": dow_conv[dow],
+                "clicks": dow_clicks[dow], "impressions": dow_impressions[dow],
+                "ctr": safe_div(dow_clicks[dow], dow_impressions[dow]),
+                "cpa": safe_div(dow_spend[dow], dow_conv[dow], 0),
             })
 
     monthly_spend = defaultdict(float)
@@ -229,37 +232,106 @@ def analyze_tiktok():
         monthly_conversions[month] += row["conversions"]
     top_months = sorted(
         [{"month": m, "spend": s, "conversions": monthly_conversions[m]} for m, s in monthly_spend.items()],
-        key=lambda x: x["spend"],
-        reverse=True,
+        key=lambda x: x["spend"], reverse=True,
     )
 
     active_campaigns = [c for c in campaigns if c.get("operation_status") == "ENABLE"]
     inactive_campaigns = [c for c in campaigns if c.get("operation_status") != "ENABLE"]
 
     return {
-        "account": adv,
-        "total_campaigns": len(campaigns),
-        "active_campaigns": len(active_campaigns),
-        "inactive_campaigns": inactive_campaigns,
-        "total_adgroups": len(adgroups),
-        "total_ads": len(ads),
-        "total_spend": total_spend,
-        "total_impressions": total_impressions,
-        "total_clicks": total_clicks,
-        "total_conversions": total_conversions,
+        "account": adv, "total_campaigns": len(campaigns),
+        "active_campaigns": len(active_campaigns), "inactive_campaigns": inactive_campaigns,
+        "total_adgroups": len(adgroups), "total_ads": len(ads),
+        "total_spend": total_spend, "total_impressions": total_impressions,
+        "total_clicks": total_clicks, "total_conversions": total_conversions,
         "total_video_plays": total_video_plays,
-        "top_campaigns": top_campaigns,
-        "best_cpa_campaigns": best_cpa_campaigns,
-        "worst_cpa_campaigns": worst_cpa_campaigns,
-        "top_adgroups": top_adgroups,
-        "top_ads": top_ads,
-        "best_ads_by_ctr": best_ads_by_ctr,
-        "daily_rows": daily_rows_sorted,
-        "top_days": top_days,
-        "best_cpa_days": best_cpa_days,
-        "dow_rows": dow_rows,
-        "top_months": top_months,
+        "top_campaigns": top_campaigns, "best_cpa_campaigns": best_cpa, "worst_cpa_campaigns": worst_cpa,
+        "top_adgroups": top_adgroups, "top_ads": top_ads, "best_ads_by_ctr": best_ads_ctr,
+        "daily_rows": daily_rows_sorted, "top_days": top_days, "best_cpa_days": best_cpa_days,
+        "dow_rows": dow_rows, "top_months": top_months,
         "video_funnel": {"plays": total_video_plays, "p25": total_p25, "p50": total_p50, "p75": total_p75, "p100": total_p100},
+    }
+
+
+def analyze_meta():
+    account_info, err = parse_mcp("meta_account_info.json")
+    campaigns_data, _ = parse_mcp("meta_campaigns.json")
+    adsets_data, _ = parse_mcp("meta_adsets.json")
+    campaign_insights, _ = parse_mcp("meta_campaign_insights.json")
+
+    if err or not account_info:
+        return None
+
+    account = account_info
+    campaigns = campaigns_data.get("data", [])
+    adsets = adsets_data.get("data", [])
+    campaign_map = {c["id"]: c for c in campaigns}
+
+    total_spend = total_impressions = total_clicks = total_conversions = total_reach = 0
+    campaign_rows = []
+
+    for row in campaign_insights.get("data", []):
+        cid = row.get("campaign_id")
+        c = campaign_map.get(cid, {})
+        spend = float(row.get("spend", 0) or 0)
+        impressions = int(float(row.get("impressions", 0) or 0))
+        clicks = int(float(row.get("clicks", 0) or 0))
+        conversions = meta_sum_conversions(row.get("actions", []))
+        ctr = float(row.get("ctr", 0) or 0)
+        cpc = float(row.get("cpc", 0) or 0)
+        cpm = float(row.get("cpm", 0) or 0)
+        reach = int(float(row.get("reach", 0) or 0))
+        frequency = float(row.get("frequency", 0) or 0)
+
+        total_spend += spend
+        total_impressions += impressions
+        total_clicks += clicks
+        total_conversions += conversions
+        total_reach += reach
+
+        campaign_rows.append({
+            "campaign_id": cid, "name": row.get("campaign_name", c.get("name", cid)),
+            "status": c.get("status", "UNKNOWN"), "objective": c.get("objective", "UNKNOWN"),
+            "spend": spend, "impressions": impressions, "clicks": clicks, "conversions": conversions,
+            "ctr": ctr, "cpc": cpc, "cpm": cpm, "reach": reach, "frequency": frequency,
+            "cpa": safe_div(spend, conversions, 0), "conv_rate": safe_div(conversions, clicks),
+            "daily_budget": float(c.get("daily_budget", 0) or 0) / 100,
+            "start_time": c.get("start_time", ""),
+        })
+
+    top_campaigns = sorted(campaign_rows, key=lambda x: x["spend"], reverse=True)
+    best_cpa = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpa"])[:5]
+    worst_cpa = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpa"], reverse=True)[:5]
+
+    active_campaigns = [c for c in campaigns if c.get("status") == "ACTIVE"]
+    paused_campaigns = [c for c in campaigns if c.get("status") != "ACTIVE"]
+
+    adset_rows = []
+    for ag in adsets:
+        targeting = ag.get("targeting", {})
+        geo = targeting.get("geo_locations", {})
+        countries = geo.get("countries", [])
+        interests = []
+        for spec in targeting.get("flexible_spec", []):
+            for interest in spec.get("interests", []):
+                interests.append(interest.get("name", ""))
+        age_min = targeting.get("age_min", "")
+        age_max = targeting.get("age_max", "")
+        adset_rows.append({
+            "name": ag.get("name", ""), "campaign_id": ag.get("campaign_id", ""),
+            "status": ag.get("status", ""), "budget": float(ag.get("daily_budget", 0) or 0) / 100,
+            "bid_strategy": ag.get("bid_strategy", ""), "age_min": age_min, "age_max": age_max,
+            "countries": ", ".join(countries), "interests": ", ".join(interests[:5]),
+        })
+
+    return {
+        "account": account, "total_campaigns": len(campaigns),
+        "active_campaigns": len(active_campaigns), "paused_campaigns": paused_campaigns,
+        "total_adsets": len(adsets), "total_spend": total_spend,
+        "total_impressions": total_impressions, "total_clicks": total_clicks,
+        "total_conversions": total_conversions, "total_reach": total_reach,
+        "top_campaigns": top_campaigns, "best_cpa_campaigns": best_cpa, "worst_cpa_campaigns": worst_cpa,
+        "adset_rows": adset_rows,
     }
 
 
@@ -282,11 +354,7 @@ def analyze_google_ads():
     campaign_totals = defaultdict(lambda: {"spend": 0.0, "impressions": 0, "clicks": 0, "conversions": 0, "conversions_value": 0})
     monthly_spend = defaultdict(float)
     monthly_conversions = defaultdict(int)
-    total_spend = 0.0
-    total_impressions = 0
-    total_clicks = 0
-    total_conversions = 0
-    total_conversion_value = 0
+    total_spend = total_impressions = total_clicks = total_conversions = total_conversion_value = 0
 
     for row in monthly_data.get("results", []):
         cid = row["campaign"]["id"]
@@ -318,26 +386,19 @@ def analyze_google_ads():
     campaign_rows = []
     for cid, data in campaign_totals.items():
         campaign_rows.append({
-            "campaign_id": cid,
-            "name": data["name"],
-            "spend": data["spend"],
-            "impressions": data["impressions"],
-            "clicks": data["clicks"],
-            "conversions": data["conversions"],
-            "conversions_value": data["conversions_value"],
-            "ctr": data["clicks"] / data["impressions"] if data["impressions"] else 0,
-            "cpc": data["spend"] / data["clicks"] if data["clicks"] else 0,
-            "cpa": data["spend"] / data["conversions"] if data["conversions"] else 0,
-            "roas": data["conversions_value"] / data["spend"] if data["spend"] else 0,
-            "conv_rate": data["conversions"] / data["clicks"] if data["clicks"] else 0,
+            "campaign_id": cid, "name": data["name"], "spend": data["spend"],
+            "impressions": data["impressions"], "clicks": data["clicks"], "conversions": data["conversions"],
+            "conversions_value": data["conversions_value"], "ctr": safe_div(data["clicks"], data["impressions"]),
+            "cpc": safe_div(data["spend"], data["clicks"], 0), "cpa": safe_div(data["spend"], data["conversions"], 0),
+            "roas": safe_div(data["conversions_value"], data["spend"], 0),
+            "conv_rate": safe_div(data["conversions"], data["clicks"]),
         })
     top_campaigns = sorted(campaign_rows, key=lambda x: x["spend"], reverse=True)
-    best_cpa_campaigns = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpa"])[:3]
+    best_cpa = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpa"])[:3]
 
     top_months = sorted(
         [{"month": m, "spend": s, "conversions": monthly_conversions[m]} for m, s in monthly_spend.items()],
-        key=lambda x: x["spend"],
-        reverse=True,
+        key=lambda x: x["spend"], reverse=True,
     )
 
     adgroup_rows = []
@@ -349,17 +410,15 @@ def analyze_google_ads():
         clicks = int(float(m.get("clicks", 0) or 0))
         conversions = int(float(m.get("conversions", 0) or 0))
         impressions = int(float(m.get("impressions", 0) or 0))
+        conv_value = float(m.get("conversionsValue", 0) or 0)
         adgroup_rows.append({
-            "name": ag["name"],
-            "campaign": c["name"],
-            "spend": spend,
-            "impressions": impressions,
-            "clicks": clicks,
-            "conversions": conversions,
+            "name": ag["name"], "campaign": c["name"], "spend": spend, "impressions": impressions,
+            "clicks": clicks, "conversions": conversions, "conversions_value": conv_value,
             "ctr": m.get("ctr", 0),
             "cpc": float(m.get("averageCpc", 0) or 0) / 1_000_000,
             "cpa": float(m.get("costPerConversion", 0) or 0) / 1_000_000 if conversions else 0,
-            "conv_rate": conversions / clicks if clicks else 0,
+            "conv_rate": safe_div(conversions, clicks),
+            "roas": safe_div(conv_value, spend, 0),
         })
     top_adgroups = sorted(adgroup_rows, key=lambda x: x["spend"], reverse=True)
 
@@ -375,16 +434,12 @@ def analyze_google_ads():
     device_rows = []
     for device, data in device_totals.items():
         device_rows.append({
-            "device": device,
-            "spend": data["spend"],
-            "impressions": data["impressions"],
-            "clicks": data["clicks"],
-            "conversions": data["conversions"],
-            "conversions_value": data["conversions_value"],
-            "ctr": data["clicks"] / data["impressions"] if data["impressions"] else 0,
-            "cpa": data["spend"] / data["conversions"] if data["conversions"] else 0,
-            "roas": data["conversions_value"] / data["spend"] if data["spend"] else 0,
-            "conv_rate": data["conversions"] / data["clicks"] if data["clicks"] else 0,
+            "device": device, "spend": data["spend"], "impressions": data["impressions"],
+            "clicks": data["clicks"], "conversions": data["conversions"], "conversions_value": data["conversions_value"],
+            "ctr": safe_div(data["clicks"], data["impressions"]),
+            "cpa": safe_div(data["spend"], data["conversions"], 0),
+            "roas": safe_div(data["conversions_value"], data["spend"], 0),
+            "conv_rate": safe_div(data["conversions"], data["clicks"]),
         })
     device_rows = sorted(device_rows, key=lambda x: x["spend"], reverse=True)
 
@@ -403,1005 +458,924 @@ def analyze_google_ads():
         if dow in dow_totals:
             data = dow_totals[dow]
             dow_rows.append({
-                "day": dow.title(),
-                "spend": data["spend"],
-                "impressions": data["impressions"],
-                "clicks": data["clicks"],
-                "conversions": data["conversions"],
-                "conversions_value": data["conversions_value"],
-                "ctr": data["clicks"] / data["impressions"] if data["impressions"] else 0,
-                "cpa": data["spend"] / data["conversions"] if data["conversions"] else 0,
-                "roas": data["conversions_value"] / data["spend"] if data["spend"] else 0,
-                "conv_rate": data["conversions"] / data["clicks"] if data["clicks"] else 0,
+                "day": dow.title(), "spend": data["spend"], "impressions": data["impressions"],
+                "clicks": data["clicks"], "conversions": data["conversions"], "conversions_value": data["conversions_value"],
+                "ctr": safe_div(data["clicks"], data["impressions"]),
+                "cpa": safe_div(data["spend"], data["conversions"], 0),
+                "roas": safe_div(data["conversions_value"], data["spend"], 0),
+                "conv_rate": safe_div(data["conversions"], data["clicks"]),
             })
 
     active_campaigns = [c for c in campaigns if c.get("status") == "ENABLED"]
     inactive_campaigns = [c for c in campaigns if c.get("status") != "ENABLED"]
 
     return {
-        "account": account,
-        "total_campaigns": len(campaigns),
-        "active_campaigns": len(active_campaigns),
-        "inactive_campaigns": inactive_campaigns,
-        "total_ads": len(ads),
-        "ads": ads,
-        "total_spend": total_spend,
-        "total_impressions": total_impressions,
-        "total_clicks": total_clicks,
-        "total_conversions": total_conversions,
-        "total_conversion_value": total_conversion_value,
-        "top_campaigns": top_campaigns,
-        "best_cpa_campaigns": best_cpa_campaigns,
-        "top_adgroups": top_adgroups,
-        "top_months": top_months,
-        "device_rows": device_rows,
-        "dow_rows": dow_rows,
+        "account": account, "total_campaigns": len(campaigns),
+        "active_campaigns": len(active_campaigns), "inactive_campaigns": inactive_campaigns,
+        "total_ads": len(ads), "ads": ads, "total_spend": total_spend,
+        "total_impressions": total_impressions, "total_clicks": total_clicks,
+        "total_conversions": total_conversions, "total_conversion_value": total_conversion_value,
+        "top_campaigns": top_campaigns, "best_cpa_campaigns": best_cpa,
+        "top_adgroups": top_adgroups, "top_months": top_months,
+        "device_rows": device_rows, "dow_rows": dow_rows,
     }
 
 
-def analyze_meta():
-    account_info, err = parse_mcp("meta_account_info.json")
-    campaigns_data, _ = parse_mcp("meta_campaigns.json")
-    adsets_data, _ = parse_mcp("meta_adsets.json")
-    campaign_insights, _ = parse_mcp("meta_campaign_insights.json")
+# ===================== HTML RENDERING =====================
 
-    if err or not account_info:
-        return None
-
-    account = account_info
-    campaigns = campaigns_data.get("data", [])
-    adsets = adsets_data.get("data", [])
-    campaign_map = {c["id"]: c for c in campaigns}
-
-    total_spend = 0.0
-    total_impressions = 0
-    total_clicks = 0
-    total_conversions = 0
-    campaign_rows = []
-
-    for row in campaign_insights.get("data", []):
-        cid = row.get("campaign_id")
-        c = campaign_map.get(cid, {})
-        spend = float(row.get("spend", 0) or 0)
-        impressions = int(float(row.get("impressions", 0) or 0))
-        clicks = int(float(row.get("clicks", 0) or 0))
-        conversions = meta_sum_conversions(row.get("actions", []))
-        ctr = float(row.get("ctr", 0) or 0)
-        cpc = float(row.get("cpc", 0) or 0)
-        cpm = float(row.get("cpm", 0) or 0)
-        reach = int(float(row.get("reach", 0) or 0))
-
-        total_spend += spend
-        total_impressions += impressions
-        total_clicks += clicks
-        total_conversions += conversions
-
-        campaign_rows.append({
-            "campaign_id": cid,
-            "name": row.get("campaign_name", c.get("name", cid)),
-            "status": c.get("status", "UNKNOWN"),
-            "objective": c.get("objective", "UNKNOWN"),
-            "spend": spend,
-            "impressions": impressions,
-            "clicks": clicks,
-            "conversions": conversions,
-            "ctr": ctr,
-            "cpc": cpc,
-            "cpm": cpm,
-            "reach": reach,
-            "frequency": float(row.get("frequency", 0) or 0),
-            "cpa": spend / conversions if conversions else 0,
-            "conv_rate": conversions / clicks if clicks else 0,
-        })
-
-    top_campaigns = sorted(campaign_rows, key=lambda x: x["spend"], reverse=True)
-    best_cpa_campaigns = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpa"])[:5]
-    worst_cpa_campaigns = sorted([c for c in campaign_rows if c["conversions"] > 0], key=lambda x: x["cpa"], reverse=True)[:5]
-
-    active_campaigns = [c for c in campaigns if c.get("status") == "ACTIVE"]
-    paused_campaigns = [c for c in campaigns if c.get("status") != "ACTIVE"]
-
-    # Adset summary
-    adset_rows = []
-    for ag in adsets[:20]:
-        targeting = ag.get("targeting", {})
-        age_range = targeting.get("age_range", [])
-        geo = targeting.get("geo_locations", {})
-        countries = geo.get("countries", [])
-        interests = []
-        for spec in targeting.get("flexible_spec", []):
-            for interest in spec.get("interests", []):
-                interests.append(interest.get("name", ""))
-        adset_rows.append({
-            "name": ag.get("name", ""),
-            "campaign_id": ag.get("campaign_id", ""),
-            "status": ag.get("status", ""),
-            "budget": float(ag.get("daily_budget", 0) or 0) / 100,
-            "bid_strategy": ag.get("bid_strategy", ""),
-            "age_min": targeting.get("age_min", ""),
-            "age_max": targeting.get("age_max", ""),
-            "countries": ", ".join(countries),
-            "interests": ", ".join(interests[:5]),
-        })
-
-    return {
-        "account": account,
-        "total_campaigns": len(campaigns),
-        "active_campaigns": len(active_campaigns),
-        "paused_campaigns": paused_campaigns,
-        "total_adsets": len(adsets),
-        "total_spend": total_spend,
-        "total_impressions": total_impressions,
-        "total_clicks": total_clicks,
-        "total_conversions": total_conversions,
-        "top_campaigns": top_campaigns,
-        "best_cpa_campaigns": best_cpa_campaigns,
-        "worst_cpa_campaigns": worst_cpa_campaigns,
-        "adset_rows": adset_rows,
-    }
+def escape_js(s):
+    return json.dumps(str(s))
 
 
-def render_table(headers, rows, cls=""):
-    html = [f'<table class="{cls}">', "<thead><tr>"]
-    html += [f"<th>{h}</th>" for h in headers]
-    html += ["</tr></thead><tbody>"]
+def render_nav(active_tab, logo_b64):
+    logo_html = f'<img src="data:image/png;base64,{logo_b64}" alt="White Car" class="nav-logo">' if logo_b64 else ""
+    tabs = [
+        ("index.html", "Overview", "overview"),
+        ("tiktok.html", "TikTok", "tiktok"),
+        ("meta.html", "Meta", "meta"),
+        ("google.html", "Google Ads", "google"),
+    ]
+    links = []
+    for href, label, tab in tabs:
+        cls = "active" if tab == active_tab else ""
+        links.append(f'<a href="{href}" class="{cls}">{label}</a>')
+    return f"""
+<nav class="navbar">
+  <div class="nav-brand">
+    {logo_html}
+    <span class="nav-title">White Car Ads Audit</span>
+  </div>
+  <div class="nav-tabs">
+    {"".join(links)}
+  </div>
+</nav>
+"""
+
+
+def common_head(title, active_tab):
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {{
+      --wc-white: #ffffff;
+      --wc-black: #0b0c10;
+      --wc-slate: #1f2833;
+      --wc-silver: #c5c6c7;
+      --wc-accent: #45a29e;
+      --wc-accent-light: #66fcf1;
+      --wc-danger: #e74c3c;
+      --wc-warn: #f39c12;
+      --wc-success: #2ecc71;
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-strong: 0 10px 40px rgba(0,0,0,0.14);
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%);
+      color: var(--wc-slate);
+      line-height: 1.55;
+    }}
+    .navbar {{
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 2rem;
+      background: rgba(11,12,16,0.96);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }}
+    .nav-brand {{
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.01em;
+    }}
+    .nav-logo {{
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+    }}
+    .nav-tabs {{
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }}
+    .nav-tabs a {{
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 0.55rem 1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }}
+    .nav-tabs a:hover, .nav-tabs a.active {{
+      color: var(--wc-black);
+      background: var(--wc-accent-light);
+    }}
+    .hero {{
+      position: relative;
+      overflow: hidden;
+      background: var(--wc-black);
+      color: #fff;
+      padding: 3.5rem 2rem 2.5rem;
+      text-align: center;
+    }}
+    .hero::before {{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(69,162,158,0.22), transparent 40%),
+                  radial-gradient(circle at 80% 70%, rgba(102,252,241,0.14), transparent 45%);
+      pointer-events: none;
+    }}
+    .hero h1 {{
+      position: relative;
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      letter-spacing: -0.03em;
+    }}
+    .hero p {{
+      position: relative;
+      margin: 0;
+      color: var(--wc-silver);
+      font-size: 1.05rem;
+    }}
+    .container {{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }}
+    .filters {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+      background: #fff;
+      padding: 1.1rem 1.25rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }}
+    .filters label {{
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--wc-slate);
+      flex: 1 1 160px;
+      min-width: 140px;
+    }}
+    .filters input, .filters select {{
+      padding: 0.55rem 0.7rem;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font: inherit;
+      background: #fff;
+    }}
+    .filters button {{
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      background: var(--wc-black);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }}
+    .filters button:hover {{ background: var(--wc-slate); transform: translateY(-1px); }}
+    .kpis {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }}
+    .kpi {{
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.15rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s;
+    }}
+    .kpi:hover {{ transform: translateY(-3px); box-shadow: var(--shadow-strong); }}
+    .kpi-label {{
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }}
+    .kpi-value {{
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--wc-black);
+      letter-spacing: -0.02em;
+    }}
+    .kpi.sub .kpi-value {{ font-size: 1.25rem; color: var(--wc-slate); }}
+    .card {{
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }}
+    .card h2 {{
+      margin: 0 0 1rem;
+      font-size: 1.15rem;
+      color: var(--wc-black);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }}
+    .card h2 .platform-icon {{
+      width: 26px;
+      height: 26px;
+    }}
+    .grid-2 {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.25rem;
+    }}
+    .grid-3 {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }}
+    th, td {{
+      padding: 0.65rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }}
+    th {{
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--wc-black);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }}
+    tr:hover td {{ background: #f8fafc; }}
+    .status {{
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }}
+    .status.active {{ background: #d1fae5; color: #065f46; }}
+    .status.paused, .status.removed {{ background: #fee2e2; color: #991b1b; }}
+    .status.enable {{ background: #d1fae5; color: #065f46; }}
+    .status.disable, .status.unknown {{ background: #e5e7eb; color: #374151; }}
+    .pill {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: var(--wc-slate);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }}
+    .chart-wrap {{
+      position: relative;
+      height: 320px;
+    }}
+    .chart-wrap.small {{ height: 240px; }}
+    .no-data {{
+      padding: 2rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.95rem;
+    }}
+    .footer {{
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+      font-size: 0.85rem;
+    }}
+    .platform-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }}
+    .platform-card {{
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: transform 0.15s;
+      border-top: 4px solid transparent;
+    }}
+    .platform-card:hover {{ transform: translateY(-4px); box-shadow: var(--shadow-strong); }}
+    .platform-card.tiktok {{ border-color: #000; }}
+    .platform-card.meta {{ border-color: #1877f2; }}
+    .platform-card.google {{ border-color: #4285f4; }}
+    .platform-card h3 {{
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.15rem;
+    }}
+    .platform-card .platform-icon {{ width: 28px; height: 28px; }}
+    .platform-card .metric-row {{
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.92rem;
+    }}
+    .platform-card .metric-row span:first-child {{ color: #64748b; }}
+    .platform-card .metric-row span:last-child {{ font-weight: 700; }}
+    .platform-card a {{
+      margin-top: auto;
+      padding-top: 0.75rem;
+      color: var(--wc-accent);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }}
+    .platform-card a:hover {{ text-decoration: underline; }}
+    .badge {{
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: #e0f2fe;
+      color: #0369a1;
+    }}
+    .section-title {{
+      margin: 2rem 0 1rem;
+      font-size: 1.35rem;
+      color: var(--wc-black);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }}
+    .recommendation {{
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--wc-accent);
+    }}
+    .recommendation h4 {{ margin: 0 0 0.25rem; font-size: 1rem; }}
+    .recommendation p {{ margin: 0; font-size: 0.92rem; color: #475569; }}
+    @media (max-width: 640px) {{
+      .navbar {{ padding: 0.75rem 1rem; }}
+      .nav-title {{ display: none; }}
+      .grid-2, .grid-3 {{ grid-template-columns: 1fr; }}
+      .hero {{ padding: 2rem 1rem; }}
+    }}
+    table.data-table td:nth-child(1), table.data-table th:nth-child(1) {{ white-space: normal; max-width: 220px; }}
+  </style>
+</head>
+<body>
+"""
+
+
+def render_filters(platform):
+    return f"""
+<div class="filters">
+  <label>Start Date
+    <input type="date" id="startDate" data-platform="{platform}">
+  </label>
+  <label>End Date
+    <input type="date" id="endDate" data-platform="{platform}">
+  </label>
+  <label>Campaign Status
+    <select id="statusFilter" data-platform="{platform}">
+      <option value="all">All</option>
+      <option value="active">Active / Enabled</option>
+      <option value="inactive">Paused / Disabled</option>
+    </select>
+  </label>
+  <label>Min Spend (SAR)
+    <input type="number" id="minSpend" placeholder="0" data-platform="{platform}">
+  </label>
+  <button onclick="applyFilters('{platform}')">Apply Filters</button>
+  <button onclick="resetFilters('{platform}')" style="background:#475569">Reset</button>
+</div>
+"""
+
+
+def kpi_card(label, value, sub=False):
+    cls = "kpi sub" if sub else "kpi"
+    return f'<div class="{cls}"><div class="kpi-label">{label}</div><div class="kpi-value">{value}</div></div>'
+
+
+def render_status(status):
+    s = str(status).lower()
+    if s in ("enable", "enabled", "active"):
+        return '<span class="status active">Active</span>'
+    if s in ("disable", "disabled", "paused", "removed", "deleted"):
+        return '<span class="status paused">Paused</span>'
+    return f'<span class="status unknown">{status}</span>'
+
+
+def render_tiktok_campaigns_table(rows, table_id="tiktokCampaignsTable"):
+    if not rows:
+        return '<div class="no-data">No campaign data available.</div>'
+    header = """
+    <tr>
+      <th>Campaign</th><th>Status</th><th>Objective</th><th>Spend</th><th>Impr.</th><th>Clicks</th>
+      <th>Conv.</th><th>CTR</th><th>CPC</th><th>CPA</th><th>Conv. Rate</th><th>Video VTR</th><th>Completion</th>
+    </tr>"""
+    body = ""
+    for r in rows:
+        body += f"""
+    <tr data-status="{r['status'].lower()}" data-spend="{r['spend']:.2f}">
+      <td><strong>{r['name']}</strong><br><span class="pill">{r['campaign_id']}</span></td>
+      <td>{render_status(r['status'])}</td>
+      <td>{r['objective']}</td>
+      <td>{fmt_sar(r['spend'])}</td>
+      <td>{fmt_num(r['impressions'])}</td>
+      <td>{fmt_num(r['clicks'])}</td>
+      <td>{fmt_num(r['conversions'])}</td>
+      <td>{fmt_pct(r['ctr'], True)}</td>
+      <td>{fmt_sar(r['cpc'])}</td>
+      <td>{fmt_sar(r['cpconv'])}</td>
+      <td>{fmt_pct(r['conv_rate'])}</td>
+      <td>{fmt_pct(r['vtr'], True)}</td>
+      <td>{fmt_pct(r['completion_rate'])}</td>
+    </tr>"""
+    return f'<div class="card"><h2>Campaigns</h2><div style="overflow-x:auto"><table class="data-table" id="{table_id}">{header}<tbody>{body}</tbody></table></div></div>'
+
+
+def render_meta_campaigns_table(rows, table_id="metaCampaignsTable"):
+    if not rows:
+        return '<div class="no-data">No campaign data available.</div>'
+    header = """
+    <tr>
+      <th>Campaign</th><th>Status</th><th>Objective</th><th>Spend</th><th>Impr.</th><th>Clicks</th>
+      <th>Leads</th><th>Reach</th><th>CTR</th><th>CPC</th><th>CPM</th><th>CPA</th><th>Conv. Rate</th>
+    </tr>"""
+    body = ""
+    for r in rows:
+        body += f"""
+    <tr data-status="{r['status'].lower()}" data-spend="{r['spend']:.2f}">
+      <td><strong>{r['name']}</strong><br><span class="pill">{r['campaign_id']}</span></td>
+      <td>{render_status(r['status'])}</td>
+      <td>{r['objective']}</td>
+      <td>{fmt_sar(r['spend'])}</td>
+      <td>{fmt_num(r['impressions'])}</td>
+      <td>{fmt_num(r['clicks'])}</td>
+      <td>{fmt_num(r['conversions'])}</td>
+      <td>{fmt_num(r['reach'])}</td>
+      <td>{fmt_pct(r['ctr'])}</td>
+      <td>{fmt_sar(r['cpc'])}</td>
+      <td>{fmt_sar(r['cpm'])}</td>
+      <td>{fmt_sar(r['cpa'])}</td>
+      <td>{fmt_pct(r['conv_rate'])}</td>
+    </tr>"""
+    return f'<div class="card"><h2>Campaigns</h2><div style="overflow-x:auto"><table class="data-table" id="{table_id}">{header}<tbody>{body}</tbody></table></div></div>'
+
+
+def render_google_campaigns_table(rows, table_id="googleCampaignsTable"):
+    if not rows:
+        return '<div class="no-data">No campaign data available.</div>'
+    header = """
+    <tr>
+      <th>Campaign</th><th>Spend</th><th>Impr.</th><th>Clicks</th><th>Conv.</th><th>Conv. Value</th>
+      <th>CTR</th><th>CPC</th><th>CPA</th><th>ROAS</th><th>Conv. Rate</th>
+    </tr>"""
+    body = ""
+    for r in rows:
+        body += f"""
+    <tr data-status="enabled" data-spend="{r['spend']:.2f}">
+      <td><strong>{r['name']}</strong><br><span class="pill">{r['campaign_id']}</span></td>
+      <td>{fmt_sar(r['spend'])}</td>
+      <td>{fmt_num(r['impressions'])}</td>
+      <td>{fmt_num(r['clicks'])}</td>
+      <td>{fmt_num(r['conversions'])}</td>
+      <td>{fmt_sar(r['conversions_value'])}</td>
+      <td>{fmt_pct(r['ctr'])}</td>
+      <td>{fmt_sar(r['cpc'])}</td>
+      <td>{fmt_sar(r['cpa'])}</td>
+      <td>{r['roas']:.2f}x</td>
+      <td>{fmt_pct(r['conv_rate'])}</td>
+    </tr>"""
+    return f'<div class="card"><h2>Campaigns</h2><div style="overflow-x:auto"><table class="data-table" id="{table_id}">{header}<tbody>{body}</tbody></table></div></div>'
+
+
+def render_simple_table(title, headers, rows, empty_msg="No data available."):
+    if not rows:
+        return f'<div class="card"><h2>{title}</h2><div class="no-data">{empty_msg}</div></div>'
+    ths = "".join(f"<th>{h}</th>" for h in headers)
+    body = ""
     for row in rows:
-        html.append("<tr>")
-        for cell in row:
-            html.append(f"<td>{cell}</td>")
-        html.append("</tr>")
-    html.append("</tbody></table>")
-    return "\n".join(html)
+        body += "<tr>" + "".join(f"<td>{c}</td>" for c in row) + "</tr>"
+    return f'<div class="card"><h2>{title}</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr>{ths}</tr></thead><tbody>{body}</tbody></table></div></div>'
+
+
+def render_chart_card(title, canvas_id, small=False):
+    cls = "chart-wrap small" if small else "chart-wrap"
+    return f'<div class="card"><h2>{title}</h2><div class="{cls}"><canvas id="{canvas_id}"></canvas></div></div>'
+
+
+ICONS = {
+    "tiktok": "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg",
+    "meta": "https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg",
+    "google": "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg",
+}
+
+
+def platform_icon(platform):
+    url = ICONS.get(platform, "")
+    return f'<img src="{url}" class="platform-icon" alt="{platform.title()}">' if url else ""
+
+
+def overview_page(tiktok, meta, google, logo_b64):
+    total_spend = tiktok["total_spend"] + (meta["total_spend"] if meta else 0) + (google["total_spend"] if google else 0)
+    total_conversions = tiktok["total_conversions"] + (meta["total_conversions"] if meta else 0) + (google["total_conversions"] if google else 0)
+    overall_cpa = safe_div(total_spend, total_conversions, 0)
+
+    cards = []
+    cards.append(f"""
+    <div class="platform-card tiktok">
+      <h3>{platform_icon('tiktok')} TikTok</h3>
+      <div class="metric-row"><span>Spend</span><span>{fmt_sar(tiktok['total_spend'])}</span></div>
+      <div class="metric-row"><span>Conversions</span><span>{fmt_num(tiktok['total_conversions'])}</span></div>
+      <div class="metric-row"><span>Campaigns</span><span>{tiktok['total_campaigns']} ({tiktok['active_campaigns']} active)</span></div>
+      <div class="metric-row"><span>CTR</span><span>{fmt_pct(safe_div(tiktok['total_clicks'], tiktok['total_impressions']), True)}</span></div>
+      <a href="tiktok.html">View TikTok report &rarr;</a>
+    </div>""")
+    if meta:
+        cards.append(f"""
+    <div class="platform-card meta">
+      <h3>{platform_icon('meta')} Meta Ads</h3>
+      <div class="metric-row"><span>Spend</span><span>{fmt_sar(meta['total_spend'])}</span></div>
+      <div class="metric-row"><span>Conversions</span><span>{fmt_num(meta['total_conversions'])}</span></div>
+      <div class="metric-row"><span>Campaigns</span><span>{meta['total_campaigns']} ({meta['active_campaigns']} active)</span></div>
+      <div class="metric-row"><span>CTR</span><span>{fmt_pct(safe_div(meta['total_clicks'], meta['total_impressions']))}</span></div>
+      <a href="meta.html">View Meta report &rarr;</a>
+    </div>""")
+    if google:
+        cards.append(f"""
+    <div class="platform-card google">
+      <h3>{platform_icon('google')} Google Ads</h3>
+      <div class="metric-row"><span>Spend</span><span>{fmt_sar(google['total_spend'])}</span></div>
+      <div class="metric-row"><span>Conversions</span><span>{fmt_num(google['total_conversions'])}</span></div>
+      <div class="metric-row"><span>Campaigns</span><span>{google['total_campaigns']} ({google['active_campaigns']} active)</span></div>
+      <div class="metric-row"><span>CTR</span><span>{fmt_pct(safe_div(google['total_clicks'], google['total_impressions']))}</span></div>
+      <a href="google.html">View Google report &rarr;</a>
+    </div>""")
+
+    platform_labels = ["TikTok"]
+    platform_spend = [round(tiktok["total_spend"], 2)]
+    platform_conv = [tiktok["total_conversions"]]
+    if meta:
+        platform_labels.append("Meta")
+        platform_spend.append(round(meta["total_spend"], 2))
+        platform_conv.append(meta["total_conversions"])
+    if google:
+        platform_labels.append("Google")
+        platform_spend.append(round(google["total_spend"], 2))
+        platform_conv.append(google["total_conversions"])
+
+    recommendations = []
+    if tiktok["total_conversions"] > 0 and tiktok["total_spend"] / tiktok["total_conversions"] > 100:
+        recommendations.append(("TikTok CPA is above SAR 100", "Review low-converting ad groups and pause underperformers to improve efficiency."))
+    if google and google["total_conversions"] > 0 and google["total_conversion_value"] / google["total_spend"] < 2:
+        recommendations.append(("Google ROAS below 2x", "Expand high-converting keywords/ad groups and review search terms report for waste."))
+    if meta and meta["active_campaigns"] == 0:
+        recommendations.append(("Meta campaigns are paused", "Restart top-performing lead campaigns or reallocate budget to TikTok/Google."))
+    if tiktok["top_campaigns"] and tiktok["top_campaigns"][0]["spend"] > tiktok["total_spend"] * 0.6:
+        recommendations.append(("TikTok spend concentrated", f"'{tiktok['top_campaigns'][0]['name']}' accounts for >60% of spend; diversify creative testing."))
+
+    recs_html = ""
+    for title, body in recommendations:
+        recs_html += f'<div class="recommendation"><h4>{title}</h4><p>{body}</p></div>'
+    if not recs_html:
+        recs_html = '<div class="no-data">No automated recommendations at this time.</div>'
+
+    body = f"""
+{render_nav('overview', logo_b64)}
+<div class="hero">
+  <h1>White Car Cross-Platform Ads Audit</h1>
+  <p>Unified overview of TikTok, Meta, and Google Ads performance</p>
+</div>
+<div class="container">
+  <div class="kpis">
+    {kpi_card('Total Spend', fmt_sar(total_spend))}
+    {kpi_card('Total Conversions', fmt_num(total_conversions))}
+    {kpi_card('Blended CPA', fmt_sar(overall_cpa))}
+    {kpi_card('Platforms', sum([1, bool(meta), bool(google)]))}
+  </div>
+
+  <h2 class="section-title">Platform Breakdown</h2>
+  <div class="platform-grid">
+    {"".join(cards)}
+  </div>
+
+  <div class="grid-2">
+    {render_chart_card('Spend by Platform', 'spendByPlatformChart')}
+    {render_chart_card('Conversions by Platform', 'convByPlatformChart')}
+  </div>
+
+  <h2 class="section-title">Top Spend Campaigns by Platform</h2>
+  <div class="grid-3">
+    {render_simple_table('TikTok Top Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpconv'] if c['conversions'] else 0)] for c in tiktok['top_campaigns'][:5]])}
+    {render_simple_table('Meta Top Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in (meta['top_campaigns'][:5] if meta else [])]) if meta else ''}
+    {render_simple_table('Google Top Campaigns', ['Campaign', 'Spend', 'Conv.', 'ROAS'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), f"{c['roas']:.2f}x"] for c in (google['top_campaigns'][:5] if google else [])]) if google else ''}
+  </div>
+
+  <h2 class="section-title">Recommendations</h2>
+  {recs_html}
+</div>
+<div class="footer">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+<script>
+const platformLabels = {json.dumps(platform_labels)};
+const platformSpend = {json.dumps(platform_spend)};
+const platformConv = {json.dumps(platform_conv)};
+const palette = ['#000000', '#1877f2', '#4285f4'];
+new Chart(document.getElementById('spendByPlatformChart'), {{type:'doughnut', data:{{labels:platformLabels, datasets:[{{data:platformSpend, backgroundColor:palette.slice(0, platformLabels.length), borderWidth:0}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{position:'bottom'}}}}}}}});
+new Chart(document.getElementById('convByPlatformChart'), {{type:'bar', data:{{labels:platformLabels, datasets:[{{label:'Conversions', data:platformConv, backgroundColor:palette.slice(0, platformLabels.length), borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+</script>
+</body></html>
+"""
+    return common_head("White Car Ads Audit | Overview", "overview") + body
+
+
+def tiktok_page(data, logo_b64):
+    daily_labels = [r["day"] for r in data["daily_rows"]]
+    daily_spend = [r["spend"] for r in data["daily_rows"]]
+    daily_conv = [r["conversions"] for r in data["daily_rows"]]
+    dow_labels = [r["day"] for r in data["dow_rows"]]
+    dow_spend = [r["spend"] for r in data["dow_rows"]]
+    funnel = data["video_funnel"]
+    month_labels = [m["month"] for m in data["top_months"]]
+    month_spend = [m["spend"] for m in data["top_months"]]
+
+    body = f"""
+{render_nav('tiktok', logo_b64)}
+<div class="hero">
+  <h1>{platform_icon('tiktok')} TikTok Ads</h1>
+  <p>Advertiser: {data['account'].get('name', 'Whitecarx1')} (ID {data['account'].get('advertiser_id', '')})</p>
+</div>
+<div class="container">
+  {render_filters('tiktok')}
+  <div class="kpis">
+    {kpi_card('Spend', fmt_sar(data['total_spend']))}
+    {kpi_card('Conversions', fmt_num(data['total_conversions']))}
+    {kpi_card('Impressions', fmt_num(data['total_impressions']))}
+    {kpi_card('Clicks', fmt_num(data['total_clicks']))}
+    {kpi_card('CTR', fmt_pct(safe_div(data['total_clicks'], data['total_impressions']), True), sub=True)}
+    {kpi_card('CPA', fmt_sar(safe_div(data['total_spend'], data['total_conversions'], 0)), sub=True)}
+    {kpi_card('Campaigns', f"{data['total_campaigns']} ({data['active_campaigns']} active)", sub=True)}
+  </div>
+
+  {render_tiktok_campaigns_table(data['top_campaigns'])}
+
+  <div class="grid-2">
+    {render_chart_card('Daily Spend', 'ttDailySpendChart')}
+    {render_chart_card('Daily Conversions', 'ttDailyConvChart')}
+  </div>
+
+  <h2 class="section-title">Performance Deep Dive</h2>
+  <div class="grid-3">
+    {render_chart_card('Spend by Day of Week', 'ttDowChart', small=True)}
+    {render_chart_card('Monthly Spend', 'ttMonthlyChart', small=True)}
+    {render_chart_card('Video Funnel', 'ttFunnelChart', small=True)}
+  </div>
+
+  <div class="grid-2">
+    {render_simple_table('Top Ad Groups', ['Ad Group', 'Campaign', 'Spend', 'CPA', 'Completion'], [[ag['name'][:38], ag['campaign_name'][:30], fmt_sar(ag['spend']), fmt_sar(ag['cpconv'] if ag['conversions'] else 0), fmt_pct(ag['completion_rate'])] for ag in data['top_adgroups'][:10]])}
+    {render_simple_table('Top Ads', ['Ad', 'Campaign', 'Spend', 'CPA', 'CTR'], [[ad['name'][:38], ad['campaign_name'][:30], fmt_sar(ad['spend']), fmt_sar(ad['cpconv'] if ad['conversions'] else 0), fmt_pct(ad['ctr'], True)] for ad in data['top_ads'][:10]])}
+  </div>
+
+  <div class="grid-2">
+    {render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpconv'])] for c in data['best_cpa_campaigns']])}
+    {render_simple_table('Worst CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpconv'])] for c in data['worst_cpa_campaigns']])}
+  </div>
+</div>
+<div class="footer">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+<script>
+const ttDailyLabels = {json.dumps(daily_labels)};
+const ttDailySpend = {json.dumps(daily_spend)};
+const ttDailyConv = {json.dumps(daily_conv)};
+const ttDowLabels = {json.dumps(dow_labels)};
+const ttDowSpend = {json.dumps(dow_spend)};
+const ttFunnelLabels = ['Plays', '25%', '50%', '75%', '100%'];
+const ttFunnelData = [{funnel['plays']}, {funnel['p25']}, {funnel['p50']}, {funnel['p75']}, {funnel['p100']}];
+const ttMonthLabels = {json.dumps(month_labels)};
+const ttMonthSpend = {json.dumps(month_spend)};
+
+new Chart(document.getElementById('ttDailySpendChart'), {{type:'line', data:{{labels:ttDailyLabels, datasets:[{{label:'Spend (SAR)', data:ttDailySpend, borderColor:'#000000', backgroundColor:'rgba(0,0,0,0.06)', fill:true, tension:0.3}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('ttDailyConvChart'), {{type:'bar', data:{{labels:ttDailyLabels, datasets:[{{label:'Conversions', data:ttDailyConv, backgroundColor:'#000000', borderRadius:6}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('ttDowChart'), {{type:'bar', data:{{labels:ttDowLabels, datasets:[{{label:'Spend', data:ttDowSpend, backgroundColor:'#000000', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('ttMonthlyChart'), {{type:'bar', data:{{labels:ttMonthLabels, datasets:[{{label:'Spend', data:ttMonthSpend, backgroundColor:'#45a29e', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('ttFunnelChart'), {{type:'bar', data:{{labels:ttFunnelLabels, datasets:[{{label:'Views', data:ttFunnelData, backgroundColor:['#000','#333','#555','#777','#999'], borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+</script>
+</body></html>
+"""
+    return common_head("White Car Ads Audit | TikTok", "tiktok") + body
+
+
+def meta_page(data, logo_b64):
+    top_campaigns = data["top_campaigns"]
+    labels = [c["name"][:30] for c in top_campaigns]
+    spend = [c["spend"] for c in top_campaigns]
+    conv = [c["conversions"] for c in top_campaigns]
+
+    body = f"""
+{render_nav('meta', logo_b64)}
+<div class="hero">
+  <h1>{platform_icon('meta')} Meta Ads</h1>
+  <p>Account: {data['account'].get('name', '255')} (ID {data['account'].get('id', '')})</p>
+</div>
+<div class="container">
+  {render_filters('meta')}
+  <div class="kpis">
+    {kpi_card('Lifetime Spend', fmt_sar(data['total_spend']))}
+    {kpi_card('Conversions', fmt_num(data['total_conversions']))}
+    {kpi_card('Impressions', fmt_num(data['total_impressions']))}
+    {kpi_card('Clicks', fmt_num(data['total_clicks']))}
+    {kpi_card('Reach', fmt_num(data['total_reach']), sub=True)}
+    {kpi_card('CPA', fmt_sar(safe_div(data['total_spend'], data['total_conversions'], 0)), sub=True)}
+    {kpi_card('Campaigns', f"{data['total_campaigns']} ({data['active_campaigns']} active)", sub=True)}
+  </div>
+
+  {render_meta_campaigns_table(data['top_campaigns'])}
+
+  <div class="grid-2">
+    {render_chart_card('Spend by Campaign', 'metaSpendChart')}
+    {render_chart_card('Conversions by Campaign', 'metaConvChart')}
+  </div>
+
+  <h2 class="section-title">Targeting Snapshot</h2>
+  {render_simple_table('Ad Sets', ['Ad Set', 'Campaign', 'Status', 'Budget', 'Age', 'Countries', 'Interests'], [[ag['name'][:36], ag['campaign_id'][:10], render_status(ag['status']), fmt_sar(ag['budget']), f"{ag['age_min']}-{ag['age_max']}", ag['countries'], ag['interests']] for ag in data['adset_rows'][:15]])}
+
+  <div class="grid-2">
+    {render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['best_cpa_campaigns']])}
+    {render_simple_table('Worst CPA Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['worst_cpa_campaigns']])}
+  </div>
+</div>
+<div class="footer">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+<script>
+const metaLabels = {json.dumps(labels)};
+const metaSpend = {json.dumps(spend)};
+const metaConv = {json.dumps(conv)};
+new Chart(document.getElementById('metaSpendChart'), {{type:'bar', data:{{labels:metaLabels, datasets:[{{label:'Spend (SAR)', data:metaSpend, backgroundColor:'#1877f2', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('metaConvChart'), {{type:'bar', data:{{labels:metaLabels, datasets:[{{label:'Leads', data:metaConv, backgroundColor:'#42b72a', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+</script>
+</body></html>
+"""
+    return common_head("White Car Ads Audit | Meta", "meta") + body
+
+
+def google_page(data, logo_b64):
+    top_campaigns = data["top_campaigns"]
+    labels = [c["name"][:30] for c in top_campaigns]
+    spend = [c["spend"] for c in top_campaigns]
+    conv = [c["conversions"] for c in top_campaigns]
+    month_labels = [m["month"] for m in data["top_months"]]
+    month_spend = [m["spend"] for m in data["top_months"]]
+
+    body = f"""
+{render_nav('google', logo_b64)}
+<div class="hero">
+  <h1>{platform_icon('google')} Google Ads</h1>
+  <p>Account: {data['account'].get('descriptiveName', 'white car')} ({data['account'].get('id', '348-288-3125')})</p>
+</div>
+<div class="container">
+  {render_filters('google')}
+  <div class="kpis">
+    {kpi_card('Spend', fmt_sar(data['total_spend']))}
+    {kpi_card('Conversions', fmt_num(data['total_conversions']))}
+    {kpi_card('Impressions', fmt_num(data['total_impressions']))}
+    {kpi_card('Clicks', fmt_num(data['total_clicks']))}
+    {kpi_card('Conv. Value', fmt_sar(data['total_conversion_value']), sub=True)}
+    {kpi_card('ROAS', f"{safe_div(data['total_conversion_value'], data['total_spend'], 0):.2f}x", sub=True)}
+    {kpi_card('Campaigns', f"{data['total_campaigns']} ({data['active_campaigns']} active)", sub=True)}
+  </div>
+
+  {render_google_campaigns_table(data['top_campaigns'])}
+
+  <div class="grid-2">
+    {render_chart_card('Spend by Campaign', 'googleSpendChart')}
+    {render_chart_card('Conversions by Campaign', 'googleConvChart')}
+  </div>
+
+  <div class="grid-3">
+    {render_chart_card('Monthly Spend', 'googleMonthlyChart', small=True)}
+    {render_simple_table('Device Breakdown', ['Device', 'Spend', 'Conv.', 'ROAS'], [[d['device'].title(), fmt_sar(d['spend']), fmt_num(d['conversions']), f"{d['roas']:.2f}x"] for d in data['device_rows']])}
+    {render_simple_table('Day of Week', ['Day', 'Spend', 'Conv.', 'ROAS'], [[d['day'], fmt_sar(d['spend']), fmt_num(d['conversions']), f"{d['roas']:.2f}x"] for d in data['dow_rows']])}
+  </div>
+
+  <h2 class="section-title">Ad Group Insights</h2>
+  {render_simple_table('Top Ad Groups', ['Ad Group', 'Campaign', 'Spend', 'Conv.', 'CPA', 'ROAS'], [[ag['name'][:36], ag['campaign'][:30], fmt_sar(ag['spend']), fmt_num(ag['conversions']), fmt_sar(ag['cpa'] if ag['conversions'] else 0), f"{ag['roas']:.2f}x"] for ag in data['top_adgroups'][:15]])}
+
+  {render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['best_cpa_campaigns']])}
+</div>
+<div class="footer">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+<script>
+const googleLabels = {json.dumps(labels)};
+const googleSpend = {json.dumps(spend)};
+const googleConv = {json.dumps(conv)};
+const googleMonthLabels = {json.dumps(month_labels)};
+const googleMonthSpend = {json.dumps(month_spend)};
+new Chart(document.getElementById('googleSpendChart'), {{type:'bar', data:{{labels:googleLabels, datasets:[{{label:'Spend (SAR)', data:googleSpend, backgroundColor:'#4285f4', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('googleConvChart'), {{type:'bar', data:{{labels:googleLabels, datasets:[{{label:'Conversions', data:googleConv, backgroundColor:'#34a853', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+new Chart(document.getElementById('googleMonthlyChart'), {{type:'line', data:{{labels:googleMonthLabels, datasets:[{{label:'Spend', data:googleMonthSpend, borderColor:'#4285f4', backgroundColor:'rgba(66,133,244,0.1)', fill:true, tension:0.3}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+</script>
+</body></html>
+"""
+    return common_head("White Car Ads Audit | Google Ads", "google") + body
+
+
+def filter_script():
+    return """
+<script>
+function applyFilters(platform){
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const status = document.getElementById('statusFilter').value;
+  const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
+  const tableIds = {
+    tiktok: 'tiktokCampaignsTable',
+    meta: 'metaCampaignsTable',
+    google: 'googleCampaignsTable'
+  };
+  const table = document.getElementById(tableIds[platform]);
+  if(!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    let show = true;
+    const rowStatus = row.getAttribute('data-status') || '';
+    const rowSpend = parseFloat(row.getAttribute('data-spend') || 0);
+    if(status === 'active' && !(rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(status === 'inactive' && (rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(rowSpend < minSpend) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+function resetFilters(platform){
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('minSpend').value = '';
+  applyFilters(platform);
+}
+</script>
+"""
 
 
 def main():
+    ASSETS_DIR.mkdir(exist_ok=True)
+    logo_b64 = load_logo_base64()
+
     tiktok = analyze_tiktok()
-    google = analyze_google_ads()
     meta = analyze_meta()
+    google = analyze_google_ads()
 
-    tiktok_daily_labels = [r["day"] for r in tiktok["daily_rows"]]
-    tiktok_daily_spend = [r["spend"] for r in tiktok["daily_rows"]]
-    tiktok_daily_conv = [r["conversions"] for r in tiktok["daily_rows"]]
-    tiktok_month_labels = [m["month"] for m in tiktok["top_months"]]
-    tiktok_month_spend = [m["spend"] for m in tiktok["top_months"]]
-    tiktok_dow_labels = [r["day"][:3] for r in tiktok["dow_rows"]]
-    tiktok_dow_spend = [r["spend"] for r in tiktok["dow_rows"]]
+    pages = {
+        "index.html": overview_page(tiktok, meta, google, logo_b64),
+        "tiktok.html": tiktok_page(tiktok, logo_b64) + filter_script(),
+        "meta.html": meta_page(meta, logo_b64) + filter_script(),
+        "google.html": google_page(google, logo_b64) + filter_script(),
+    }
 
-    google_month_labels = [m["month"][:7] for m in google["top_months"]] if google else []
-    google_month_spend = [m["spend"] for m in google["top_months"]] if google else []
-    google_device_labels = [r["device"].title() for r in google["device_rows"]] if google else []
-    google_device_spend = [r["spend"] for r in google["device_rows"]] if google else []
-    google_dow_labels = [r["day"][:3] for r in google["dow_rows"]] if google else []
-    google_dow_cpa = [r["cpa"] for r in google["dow_rows"]] if google else []
-
-    meta_month_labels = [c["name"][:15] for c in meta["top_campaigns"]] if meta else []
-    meta_month_spend = [c["spend"] for c in meta["top_campaigns"]] if meta else []
-
-    html_parts = []
-    html_parts.append("""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok, Meta & Google Ads Audit - Whitecarx</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-:root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #334155;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent-2: #a855f7;
-  --meta: #f43f5e;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --border: #334155;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-}
-.container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
-header {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
-  border-bottom: 1px solid var(--border);
-}
-header h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-header p { color: var(--text-muted); margin-top: 0.5rem; }
-.section { background: var(--surface); border-radius: 16px; padding: 2rem; margin: 2rem 0; border: 1px solid var(--border); }
-.section h2 { margin-top: 0; color: var(--accent); font-size: 1.75rem; }
-.section h3 { color: var(--text); margin-top: 1.5rem; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-.metric-card {
-  background: var(--surface-2);
-  border-radius: 12px;
-  padding: 1.25rem;
-  text-align: center;
-  border: 1px solid var(--border);
-}
-.metric-card .label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.metric-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 0.25rem; }
-.metric-card.positive .value { color: var(--success); }
-.metric-card.negative .value { color: var(--danger); }
-.metric-card.warning .value { color: var(--warning); }
-.metric-card.meta .value { color: var(--meta); }
-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-th, td { padding: 0.65rem; text-align: left; border-bottom: 1px solid var(--border); }
-th { background: var(--surface-2); color: var(--accent); font-weight: 600; }
-tr:hover { background: rgba(255,255,255,0.03); }
-.chart-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
-.chart-container { position: relative; height: 320px; background: var(--surface-2); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
-.insight-card {
-  background: var(--surface-2);
-  border-radius: 12px;
-  padding: 1.25rem;
-  margin: 1rem 0;
-  border-left: 4px solid var(--accent);
-}
-.insight-card.danger { border-left-color: var(--danger); }
-.insight-card.warning { border-left-color: var(--warning); }
-.insight-card.success { border-left-color: var(--success); }
-.insight-card.meta { border-left-color: var(--meta); }
-.insight-card .title { font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
-.insight-card .body { color: var(--text-muted); font-size: 0.95rem; }
-.recommendations { list-style: none; padding: 0; }
-.recommendations li {
-  background: var(--surface-2);
-  border-left: 4px solid var(--accent);
-  padding: 1rem 1.25rem;
-  margin-bottom: 0.75rem;
-  border-radius: 0 8px 8px 0;
-}
-.recommendations li.danger { border-left-color: var(--danger); }
-.recommendations li.warning { border-left-color: var(--warning); }
-.recommendations li.success { border-left-color: var(--success); }
-.recommendations li.meta { border-left-color: var(--meta); }
-.note {
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1rem 0;
-  color: var(--text);
-}
-.funnel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin: 1.5rem 0;
-}
-.funnel-step {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  min-width: 120px;
-}
-.funnel-step .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
-.funnel-step .label { font-size: 0.8rem; color: var(--text-muted); }
-.funnel-step .rate { font-size: 0.75rem; color: var(--success); margin-top: 0.25rem; }
-.funnel-arrow { color: var(--text-muted); font-size: 1.5rem; }
-.platform-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-right: 0.5rem;
-}
-.badge-tiktok { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
-.badge-google { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-.badge-meta { background: rgba(244, 63, 94, 0.2); color: var(--meta); }
-footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.875rem; }
-@media (max-width: 768px) {
-  .container { padding: 1rem; }
-  header h1 { font-size: 1.75rem; }
-  .section { padding: 1.25rem; }
-  table { font-size: 0.8rem; }
-  th, td { padding: 0.5rem; }
-  .chart-row { grid-template-columns: 1fr; }
-}
-</style>
-</head>
-<body>
-<header>
-  <h1>TikTok, Meta & Google Ads Audit</h1>
-  <p>Whitecarx · Generated on """)
-    html_parts.append(datetime.now().strftime("%Y-%m-%d %H:%M"))
-    html_parts.append("""</p>
-</header>
-<div class="container">
-""")
-
-    # Accounts audited
-    html_parts.append("""<div class="section">
-  <h2>Accounts Audited</h2>
-  <div class="grid">
-    <div class="metric-card"><div class="label">TikTok Ads</div><div class="value">7521672875829477392</div><div style="color:var(--text-muted);font-size:.85rem">""")
-    html_parts.append(tiktok["account"].get("name", "Unknown"))
-    html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">Meta Ads</div><div class="value">908730431603058</div><div style="color:var(--text-muted);font-size:.85rem">""")
-    html_parts.append(meta["account"].get("name", "Unknown") if meta else "Not accessible")
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Google Ads</div><div class="value">348-288-3125</div><div style="color:var(--text-muted);font-size:.85rem">""")
-    html_parts.append(google["account"].get("name", "Unknown") if google else "Not accessible")
-    html_parts.append("""</div></div>
-  </div>
-</div>
-""")
-
-    # Cross-platform summary
-    if meta and google:
-        html_parts.append("""<div class="section">
-  <h2>Cross-Platform Summary</h2>
-  <div class="grid">
-    <div class="metric-card"><div class="label">Combined Spend</div><div class="value">""")
-        html_parts.append(fmt_sar(tiktok["total_spend"] + google["total_spend"] + meta["total_spend"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Combined Impressions</div><div class="value">""")
-        html_parts.append(fmt_num(tiktok["total_impressions"] + google["total_impressions"] + meta["total_impressions"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Combined Clicks</div><div class="value">""")
-        html_parts.append(fmt_num(tiktok["total_clicks"] + google["total_clicks"] + meta["total_clicks"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Combined Conversions</div><div class="value">""")
-        html_parts.append(fmt_num(tiktok["total_conversions"] + google["total_conversions"] + meta["total_conversions"]))
-        html_parts.append("""</div></div>
-  </div>
-  """)
-        html_parts.append(render_table(
-            ["Platform", "Spend", "Impressions", "Clicks", "Conversions", "CTR", "CPC", "CPA", "Conv Rate"],
-            [
-                ["TikTok", fmt_sar(tiktok["total_spend"]), fmt_num(tiktok["total_impressions"]), fmt_num(tiktok["total_clicks"]), fmt_num(tiktok["total_conversions"]),
-                 fmt_pct(tiktok["total_clicks"] / tiktok["total_impressions"] if tiktok["total_impressions"] else 0),
-                 fmt_sar(tiktok["total_spend"] / tiktok["total_clicks"] if tiktok["total_clicks"] else 0),
-                 fmt_sar(tiktok["total_spend"] / tiktok["total_conversions"] if tiktok["total_conversions"] else 0),
-                 fmt_pct(tiktok["total_conversions"] / tiktok["total_clicks"] if tiktok["total_clicks"] else 0)],
-                ["Meta", fmt_sar(meta["total_spend"]), fmt_num(meta["total_impressions"]), fmt_num(meta["total_clicks"]), fmt_num(meta["total_conversions"]),
-                 fmt_pct(meta["total_clicks"] / meta["total_impressions"] if meta["total_impressions"] else 0),
-                 fmt_sar(meta["total_spend"] / meta["total_clicks"] if meta["total_clicks"] else 0),
-                 fmt_sar(meta["total_spend"] / meta["total_conversions"] if meta["total_conversions"] else 0),
-                 fmt_pct(meta["total_conversions"] / meta["total_clicks"] if meta["total_clicks"] else 0)],
-                ["Google Ads", fmt_sar(google["total_spend"]), fmt_num(google["total_impressions"]), fmt_num(google["total_clicks"]), fmt_num(google["total_conversions"]),
-                 fmt_pct(google["total_clicks"] / google["total_impressions"] if google["total_impressions"] else 0),
-                 fmt_sar(google["total_spend"] / google["total_clicks"] if google["total_clicks"] else 0),
-                 fmt_sar(google["total_spend"] / google["total_conversions"] if google["total_conversions"] else 0),
-                 fmt_pct(google["total_conversions"] / google["total_clicks"] if google["total_clicks"] else 0)],
-            ]
-        ))
-        html_parts.append("</div>")
-
-    # TIKTOK SECTION
-    html_parts.append("""<div class="section">
-  <h2><span class="platform-badge badge-tiktok">TikTok</span> TikTok Ads Audit</h2>
-  <p><strong>Account:</strong> """)
-    html_parts.append(tiktok["account"].get("name", "Unknown"))
-    html_parts.append(""" · <strong>Currency:</strong> """)
-    html_parts.append(tiktok["account"].get("currency", "SAR"))
-    html_parts.append("""</p>
-  <div class="grid">
-    <div class="metric-card"><div class="label">Spend (365d)</div><div class="value">""")
-    html_parts.append(fmt_sar(tiktok["total_spend"]))
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Impressions</div><div class="value">""")
-    html_parts.append(fmt_num(tiktok["total_impressions"]))
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Clicks</div><div class="value">""")
-    html_parts.append(fmt_num(tiktok["total_clicks"]))
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Conversions</div><div class="value">""")
-    html_parts.append(fmt_num(tiktok["total_conversions"]))
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">CTR</div><div class="value">""")
-    html_parts.append(fmt_pct(tiktok["total_clicks"] / tiktok["total_impressions"] if tiktok["total_impressions"] else 0))
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">CPA</div><div class="value">""")
-    html_parts.append(fmt_sar(tiktok["total_spend"] / tiktok["total_conversions"] if tiktok["total_conversions"] else 0))
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Active / Total</div><div class="value">""")
-    html_parts.append(f"{tiktok['active_campaigns']} / {tiktok['total_campaigns']}")
-    html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Video Plays</div><div class="value">""")
-    html_parts.append(fmt_num(tiktok["total_video_plays"]))
-    html_parts.append("""</div></div>
-  </div>
-
-  <h3>Video View Funnel</h3>
-  <div class="funnel">
-    <div class="funnel-step"><div class="value">""")
-    html_parts.append(fmt_num(tiktok["total_impressions"]))
-    html_parts.append("""</div><div class="label">Impressions</div></div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step"><div class="value">""")
-    html_parts.append(fmt_num(tiktok["video_funnel"]["plays"]))
-    html_parts.append("""</div><div class="label">Video Plays</div><div class="rate">""")
-    html_parts.append(fmt_pct(tiktok["video_funnel"]["plays"] / tiktok["total_impressions"] if tiktok["total_impressions"] else 0))
-    html_parts.append("""</div></div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step"><div class="value">""")
-    html_parts.append(fmt_num(tiktok["video_funnel"]["p25"]))
-    html_parts.append("""</div><div class="label">25% View</div><div class="rate">""")
-    html_parts.append(fmt_pct(tiktok["video_funnel"]["p25"] / tiktok["video_funnel"]["plays"] if tiktok["video_funnel"]["plays"] else 0))
-    html_parts.append("""</div></div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step"><div class="value">""")
-    html_parts.append(fmt_num(tiktok["video_funnel"]["p50"]))
-    html_parts.append("""</div><div class="label">50% View</div><div class="rate">""")
-    html_parts.append(fmt_pct(tiktok["video_funnel"]["p50"] / tiktok["video_funnel"]["plays"] if tiktok["video_funnel"]["plays"] else 0))
-    html_parts.append("""</div></div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step"><div class="value">""")
-    html_parts.append(fmt_num(tiktok["video_funnel"]["p75"]))
-    html_parts.append("""</div><div class="label">75% View</div><div class="rate">""")
-    html_parts.append(fmt_pct(tiktok["video_funnel"]["p75"] / tiktok["video_funnel"]["plays"] if tiktok["video_funnel"]["plays"] else 0))
-    html_parts.append("""</div></div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step"><div class="value">""")
-    html_parts.append(fmt_num(tiktok["video_funnel"]["p100"]))
-    html_parts.append("""</div><div class="label">100% View</div><div class="rate">""")
-    html_parts.append(fmt_pct(tiktok["video_funnel"]["p100"] / tiktok["video_funnel"]["plays"] if tiktok["video_funnel"]["plays"] else 0))
-    html_parts.append("""</div></div>
-  </div>
-
-  <h3>Top Campaigns by Spend</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Campaign", "Status", "Objective", "Spend", "Impressions", "Clicks", "Conv", "CTR", "CPC", "CPA", "Conv Rate"],
-        [[str(i), c["name"], c["status"], c["objective"], fmt_sar(c["spend"]), fmt_num(c["impressions"]), fmt_num(c["clicks"]),
-          fmt_num(c["conversions"]), fmt_pct(c["ctr"], is_tiktok_api_value=True), fmt_sar(c["cpc"]), fmt_sar(c["cpconv"]),
-          fmt_pct(c["conversions"] / c["clicks"] if c["clicks"] else 0)]
-         for i, c in enumerate(tiktok["top_campaigns"][:10], 1)]
-    ))
-
-    html_parts.append("""  <h3>Best Campaigns by CPA</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Campaign", "Spend", "Conversions", "CPA", "CTR", "Completion Rate"],
-        [[str(i), c["name"], fmt_sar(c["spend"]), fmt_num(c["conversions"]), fmt_sar(c["cpconv"]),
-          fmt_pct(c["ctr"], is_tiktok_api_value=True), fmt_pct(c["completion_rate"])]
-         for i, c in enumerate(tiktok["best_cpa_campaigns"], 1)]
-    ))
-
-    html_parts.append("""  <h3>Worst Campaigns by CPA</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Campaign", "Spend", "Conversions", "CPA", "CTR", "Completion Rate"],
-        [[str(i), c["name"], fmt_sar(c["spend"]), fmt_num(c["conversions"]), fmt_sar(c["cpconv"]),
-          fmt_pct(c["ctr"], is_tiktok_api_value=True), fmt_pct(c["completion_rate"])]
-         for i, c in enumerate(tiktok["worst_cpa_campaigns"], 1)]
-    ))
-
-    html_parts.append("""  <h3>Top Ad Groups by Spend</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Ad Group", "Campaign", "Spend", "Impressions", "Clicks", "Conv", "CPA", "Completion"],
-        [[str(i), ag["name"], ag["campaign_name"], fmt_sar(ag["spend"]), fmt_num(ag["impressions"]), fmt_num(ag["clicks"]),
-          fmt_num(ag["conversions"]), fmt_sar(ag["cpconv"]), fmt_pct(ag["completion_rate"])]
-         for i, ag in enumerate(tiktok["top_adgroups"], 1)]
-    ))
-
-    html_parts.append("""  <h3>Top Ads / Creatives by Spend</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Ad Name", "Campaign", "Spend", "Impressions", "Clicks", "Conv", "CTR", "Ad Text"],
-        [[str(i), a["name"], a["campaign_name"], fmt_sar(a["spend"]), fmt_num(a["impressions"]), fmt_num(a["clicks"]),
-          fmt_num(a["conversions"]), fmt_pct(a["ctr"], is_tiktok_api_value=True), (a["text"] or "")[:45]]
-         for i, a in enumerate(tiktok["top_ads"], 1)]
-    ))
-
-    html_parts.append("""  <h3>Best Ads by CTR</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Ad Name", "Impressions", "Clicks", "CTR", "Spend", "Conversions"],
-        [[str(i), a["name"], fmt_num(a["impressions"]), fmt_num(a["clicks"]), fmt_pct(a["ctr"], is_tiktok_api_value=True),
-          fmt_sar(a["spend"]), fmt_num(a["conversions"])]
-         for i, a in enumerate(tiktok["best_ads_by_ctr"], 1)]
-    ))
-
-    html_parts.append("""  <h3>Daily Spend & Conversions (Last 30 Days)</h3>
-  <div class="chart-container"><canvas id="tiktokDailyChart"></canvas></div>
-
-  <h3>Monthly Seasonality & Day-of-Week</h3>
-  <div class="chart-row">
-    <div class="chart-container"><canvas id="tiktokMonthlyChart"></canvas></div>
-    <div class="chart-container"><canvas id="tiktokDowChart"></canvas></div>
-  </div>
-
-  <h3>Top Days by Spend</h3>
-  """)
-    html_parts.append(render_table(
-        ["Rank", "Date", "Spend", "Conversions", "CPA"],
-        [[str(i), d["day"], fmt_sar(d["spend"]), fmt_num(d["conversions"]),
-          fmt_sar(d["spend"] / d["conversions"] if d["conversions"] else 0)]
-         for i, d in enumerate(tiktok["top_days"], 1)]
-    ))
-
-    html_parts.append("""  <h3>Day-of-Week Performance</h3>
-  """)
-    html_parts.append(render_table(
-        ["Day", "Spend", "Impressions", "Clicks", "Conversions", "CTR", "CPA"],
-        [[r["day"], fmt_sar(r["spend"]), fmt_num(r["impressions"]), fmt_num(r["clicks"]), fmt_num(r["conversions"]),
-          fmt_pct(r["ctr"]), fmt_sar(r["cpa"] if r["conversions"] else 0)]
-         for r in tiktok["dow_rows"]]
-    ))
-
-    html_parts.append("""  <h3>Inactive Campaigns</h3>
-  """)
-    if tiktok["inactive_campaigns"]:
-        html_parts.append(render_table(
-            ["Campaign", "Status", "Created"],
-            [[c["campaign_name"], c["operation_status"], c.get("create_time", "N/A")] for c in tiktok["inactive_campaigns"]]
-        ))
-    else:
-        html_parts.append("<p>All campaigns are active.</p>")
-    html_parts.append("</div>")
-
-    # META SECTION
-    if meta:
-        html_parts.append("""<div class="section">
-  <h2><span class="platform-badge badge-meta">Meta</span> Meta Ads Audit</h2>
-  <p><strong>Account:</strong> """)
-        html_parts.append(meta["account"].get("name", "Unknown"))
-        html_parts.append(""" · <strong>Currency:</strong> """)
-        html_parts.append(meta["account"].get("currency", "SAR"))
-        html_parts.append(""" · <strong>Timezone:</strong> """)
-        html_parts.append(meta["account"].get("timezone_name", "Unknown"))
-        html_parts.append(""" · <strong>Status:</strong> """)
-        html_parts.append("Active" if meta["account"].get("account_status") == 1 else "Inactive")
-        html_parts.append("""</p>
-  <div class="grid">
-    <div class="metric-card meta"><div class="label">Spend (Lifetime)</div><div class="value">""")
-        html_parts.append(fmt_sar(meta["total_spend"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">Impressions</div><div class="value">""")
-        html_parts.append(fmt_num(meta["total_impressions"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">Clicks</div><div class="value">""")
-        html_parts.append(fmt_num(meta["total_clicks"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">Conversions</div><div class="value">""")
-        html_parts.append(fmt_num(meta["total_conversions"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">CTR</div><div class="value">""")
-        html_parts.append(fmt_pct(meta["total_clicks"] / meta["total_impressions"] if meta["total_impressions"] else 0))
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">CPA</div><div class="value">""")
-        html_parts.append(fmt_sar(meta["total_spend"] / meta["total_conversions"] if meta["total_conversions"] else 0))
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">Active / Total</div><div class="value">""")
-        html_parts.append(f"{meta['active_campaigns']} / {meta['total_campaigns']}")
-        html_parts.append("""</div></div>
-    <div class="metric-card meta"><div class="label">Account Balance</div><div class="value">""")
-        html_parts.append(fmt_sar(meta["account"].get("balance", 0)))
-        html_parts.append("""</div></div>
-  </div>
-
-  <h3>Top Campaigns by Spend</h3>
-  """)
-        html_parts.append(render_table(
-            ["Rank", "Campaign", "Status", "Objective", "Spend", "Impressions", "Clicks", "Conv", "CTR", "CPC", "CPA", "Conv Rate"],
-            [[str(i), c["name"], c["status"], c["objective"], fmt_sar(c["spend"]), fmt_num(c["impressions"]), fmt_num(c["clicks"]),
-              fmt_num(c["conversions"]), fmt_pct(c["ctr"]), fmt_sar(c["cpc"]), fmt_sar(c["cpa"]), fmt_pct(c["conv_rate"])]
-             for i, c in enumerate(meta["top_campaigns"], 1)]
-        ))
-
-        html_parts.append("""  <h3>Best Campaigns by CPA</h3>
-  """)
-        html_parts.append(render_table(
-            ["Rank", "Campaign", "Spend", "Conversions", "CPA", "CTR", "Conv Rate"],
-            [[str(i), c["name"], fmt_sar(c["spend"]), fmt_num(c["conversions"]), fmt_sar(c["cpa"]),
-              fmt_pct(c["ctr"]), fmt_pct(c["conv_rate"])] for i, c in enumerate(meta["best_cpa_campaigns"], 1)]
-        ))
-
-        html_parts.append("""  <h3>Worst Campaigns by CPA</h3>
-  """)
-        html_parts.append(render_table(
-            ["Rank", "Campaign", "Spend", "Conversions", "CPA", "CTR", "Conv Rate"],
-            [[str(i), c["name"], fmt_sar(c["spend"]), fmt_num(c["conversions"]), fmt_sar(c["cpa"]),
-              fmt_pct(c["ctr"]), fmt_pct(c["conv_rate"])] for i, c in enumerate(meta["worst_cpa_campaigns"], 1)]
-        ))
-
-        html_parts.append("""  <h3>Campaign Spend Distribution</h3>
-  <div class="chart-container"><canvas id="metaCampaignChart"></canvas></div>
-
-  <h3>Ad Set Targeting Summary</h3>
-  """)
-        html_parts.append(render_table(
-            ["Ad Set", "Campaign", "Status", "Daily Budget", "Age", "Countries", "Top Interests"],
-            [[ag["name"], ag["campaign_id"], ag["status"], fmt_sar(ag["budget"]),
-              f"{ag['age_min']}-{ag['age_max']}" if ag["age_min"] else "-",
-              ag["countries"], ag["interests"]] for ag in meta["adset_rows"]]
-        ))
-
-        html_parts.append("""  <h3>Paused Campaigns</h3>
-  """)
-        if meta["paused_campaigns"]:
-            html_parts.append(render_table(
-                ["Campaign", "Objective", "Daily Budget", "Start Time"],
-                [[c["name"], c["objective"], fmt_sar(float(c.get("daily_budget", 0) or 0) / 100), c.get("start_time", "N/A")] for c in meta["paused_campaigns"]]
-            ))
-        else:
-            html_parts.append("<p>All campaigns are active.</p>")
-        html_parts.append("</div>")
-
-    # GOOGLE ADS SECTION
-    if google:
-        html_parts.append("""<div class="section">
-  <h2><span class="platform-badge badge-google">Google</span> Google Ads Audit</h2>
-  <p><strong>Account:</strong> """)
-        html_parts.append(google["account"].get("name", "Unknown"))
-        html_parts.append(""" · <strong>Currency:</strong> """)
-        html_parts.append(google["account"].get("currency_code", "SAR"))
-        html_parts.append("""</p>
-  <div class="grid">
-    <div class="metric-card"><div class="label">Spend (All Time)</div><div class="value">""")
-        html_parts.append(fmt_sar(google["total_spend"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Impressions</div><div class="value">""")
-        html_parts.append(fmt_num(google["total_impressions"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Clicks</div><div class="value">""")
-        html_parts.append(fmt_num(google["total_clicks"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Conversions</div><div class="value">""")
-        html_parts.append(fmt_num(google["total_conversions"]))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">CTR</div><div class="value">""")
-        html_parts.append(fmt_pct(google["total_clicks"] / google["total_impressions"] if google["total_impressions"] else 0))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">CPA</div><div class="value">""")
-        html_parts.append(fmt_sar(google["total_spend"] / google["total_conversions"] if google["total_conversions"] else 0))
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">ROAS</div><div class="value">""")
-        html_parts.append(f"{google['total_conversion_value'] / google['total_spend']:.2f}x" if google["total_spend"] else "-")
-        html_parts.append("""</div></div>
-    <div class="metric-card"><div class="label">Active / Total</div><div class="value">""")
-        html_parts.append(f"{google['active_campaigns']} / {google['total_campaigns']}")
-        html_parts.append("""</div></div>
-  </div>
-
-  <h3>Top Campaigns by Spend</h3>
-  """)
-        html_parts.append(render_table(
-            ["Rank", "Campaign", "Spend", "Impressions", "Clicks", "Conv", "Conv Value", "CTR", "CPC", "CPA", "ROAS", "Conv Rate"],
-            [[str(i), c["name"], fmt_sar(c["spend"]), fmt_num(c["impressions"]), fmt_num(c["clicks"]),
-              fmt_num(c["conversions"]), fmt_sar(c["conversions_value"]), fmt_pct(c["ctr"]), fmt_sar(c["cpc"]),
-              fmt_sar(c["cpa"]), f"{c['roas']:.2f}x", fmt_pct(c["conv_rate"])] for i, c in enumerate(google["top_campaigns"], 1)]
-        ))
-
-        html_parts.append("""  <h3>Best Campaigns by CPA</h3>
-  """)
-        html_parts.append(render_table(
-            ["Rank", "Campaign", "Spend", "Conversions", "CPA", "ROAS", "Conv Rate"],
-            [[str(i), c["name"], fmt_sar(c["spend"]), fmt_num(c["conversions"]), fmt_sar(c["cpa"]),
-              f"{c['roas']:.2f}x", fmt_pct(c["conv_rate"])] for i, c in enumerate(google["best_cpa_campaigns"], 1)]
-        ))
-
-        html_parts.append("""  <h3>Ad Group Performance</h3>
-  """)
-        html_parts.append(render_table(
-            ["Rank", "Ad Group", "Campaign", "Spend", "Clicks", "Conv", "CPA", "CTR", "Conv Rate"],
-            [[str(i), ag["name"], ag["campaign"], fmt_sar(ag["spend"]), fmt_num(ag["clicks"]), fmt_num(ag["conversions"]),
-              fmt_sar(ag["cpa"]), fmt_pct(ag["ctr"]), fmt_pct(ag["conv_rate"])] for i, ag in enumerate(google["top_adgroups"], 1)]
-        ))
-
-        html_parts.append("""  <h3>Monthly Trends & Day-of-Week CPA</h3>
-  <div class="chart-row">
-    <div class="chart-container"><canvas id="googleMonthlyChart"></canvas></div>
-    <div class="chart-container"><canvas id="googleDowChart"></canvas></div>
-  </div>
-
-  <h3>Device Breakdown</h3>
-  """)
-        html_parts.append(render_table(
-            ["Device", "Spend", "Impressions", "Clicks", "Conversions", "CTR", "CPA", "ROAS", "Conv Rate"],
-            [[r["device"].title(), fmt_sar(r["spend"]), fmt_num(r["impressions"]), fmt_num(r["clicks"]), fmt_num(r["conversions"]),
-              fmt_pct(r["ctr"]), fmt_sar(r["cpa"]), f"{r['roas']:.2f}x", fmt_pct(r["conv_rate"])] for r in google["device_rows"]]
-        ))
-
-        html_parts.append("""  <h3>Day-of-Week Performance</h3>
-  """)
-        html_parts.append(render_table(
-            ["Day", "Spend", "Impressions", "Clicks", "Conversions", "CTR", "CPA", "ROAS", "Conv Rate"],
-            [[r["day"], fmt_sar(r["spend"]), fmt_num(r["impressions"]), fmt_num(r["clicks"]), fmt_num(r["conversions"]),
-              fmt_pct(r["ctr"]), fmt_sar(r["cpa"]), f"{r['roas']:.2f}x", fmt_pct(r["conv_rate"])] for r in google["dow_rows"]]
-        ))
-
-        html_parts.append("""  <h3>Responsive Search Ads</h3>
-  """)
-        for i, a in enumerate(google["ads"], 1):
-            html_parts.append(f"""  <div class="note" style="margin-bottom:1rem">
-    <strong>Ad {i}:</strong> {a['id']} ({a['status']})<br>
-    <strong>Campaign:</strong> {a.get('campaign_name', '')}<br>
-    <strong>Headlines:</strong> {', '.join(a.get('headlines', [])[:10])}<br>
-    <strong>Descriptions:</strong> {', '.join(a.get('descriptions', [])[:3])}
-  </div>
-""")
-
-        if google["inactive_campaigns"]:
-            html_parts.append("""  <h3>Inactive Campaigns</h3>
-  """)
-            html_parts.append(render_table(
-                ["Campaign", "Status", "Type", "Budget"],
-                [[c["name"], c["status"], c["type"], fmt_sar(c.get("budget", 0))] for c in google["inactive_campaigns"]]
-            ))
-        html_parts.append("</div>")
-
-    # KEY INSIGHTS
-    html_parts.append("""<div class="section">
-  <h2>Key Insights</h2>
-""")
-    insights = []
-    if tiktok["top_campaigns"]:
-        best = tiktok["top_campaigns"][0]
-        insights.append(("success", "Top TikTok Spender", f"{best['name']} spent {fmt_sar(best['spend'])} with CPA {fmt_sar(best['cpconv'])} and CTR {fmt_pct(best['ctr'], is_tiktok_api_value=True)}."))
-    if tiktok["best_cpa_campaigns"]:
-        cheap = tiktok["best_cpa_campaigns"][0]
-        insights.append(("success", "Best TikTok CPA", f"{cheap['name']} has the lowest CPA at {fmt_sar(cheap['cpconv'])} — consider scaling."))
-    if tiktok["worst_cpa_campaigns"]:
-        worst = tiktok["worst_cpa_campaigns"][0]
-        insights.append(("danger", "Worst TikTok CPA", f"{worst['name']} has the highest CPA at {fmt_sar(worst['cpconv'])} — review targeting and creative."))
-    if tiktok["video_funnel"]["plays"] > 0:
-        completion = tiktok["video_funnel"]["p100"] / tiktok["video_funnel"]["plays"]
-        insights.append(("warning" if completion < 0.05 else "success", "TikTok Video Completion", f"{fmt_pct(completion)} of viewers watch to 100%. {'Strong retention' if completion >= 0.05 else 'Improve hook and pacing to boost retention'}."))
-
-    if meta:
-        insights.append(("meta", "Meta Account Health", f"Account '{meta['account'].get('name')}' has spent {fmt_sar(meta['total_spend'])} with {fmt_num(meta['total_conversions'])} conversions (CPA {fmt_sar(meta['total_spend'] / meta['total_conversions'] if meta['total_conversions'] else 0)}). Balance remaining: {fmt_sar(meta['account'].get('balance', 0))}."))
-        if meta["top_campaigns"]:
-            best_m = meta["top_campaigns"][0]
-            insights.append(("meta", "Top Meta Spender", f"{best_m['name']} is the highest spender at {fmt_sar(best_m['spend'])} with CTR {fmt_pct(best_m['ctr'])}."))
-        if meta["best_cpa_campaigns"]:
-            cheap_m = meta["best_cpa_campaigns"][0]
-            insights.append(("meta", "Best Meta CPA", f"{cheap_m['name']} has the lowest CPA at {fmt_sar(cheap_m['cpa'])} — scale this campaign."))
-        if meta["paused_campaigns"]:
-            insights.append(("warning", "Meta Campaigns Paused", f"{len(meta['paused_campaigns'])} of {meta['total_campaigns']} Meta campaigns are paused."))
-
-    if google:
-        if google["top_campaigns"]:
-            best_g = google["top_campaigns"][0]
-            insights.append(("success", "Top Google Spender", f"{best_g['name']} spent {fmt_sar(best_g['spend'])} with CPA {fmt_sar(best_g['cpa'])} and ROAS {best_g['roas']:.2f}x."))
-        if google["device_rows"]:
-            best_device = max(google["device_rows"], key=lambda x: x["conv_rate"])
-            insights.append(("success", "Best Google Device", f"{best_device['device'].title()} has the highest conversion rate ({fmt_pct(best_device['conv_rate'])})."))
-        if google["total_spend"] > 0:
-            roas = google['total_conversion_value'] / google['total_spend']
-            insights.append(("danger" if roas < 1 else "warning", "Google ROAS", f"Overall ROAS is {roas:.2f}x. {'Revenue does not cover ad spend.' if roas < 1 else 'Monitor conversion value quality.'}"))
-
-    for cls, title, body in insights:
-        html_parts.append(f"""  <div class="insight-card {cls}">
-    <div class="title">{title}</div>
-    <div class="body">{body}</div>
-  </div>
-""")
-    html_parts.append("</div>")
-
-    # RECOMMENDATIONS
-    html_parts.append("""<div class="section">
-  <h2>Strategic Recommendations</h2>
-  <ul class="recommendations">
-""")
-    recs = []
-    if tiktok["total_conversions"] > 0:
-        avg_cpconv = tiktok["total_spend"] / tiktok["total_conversions"]
-        recs.append(("warning", f"TikTok average CPA is <strong>SAR {avg_cpconv:,.2f}</strong>. Benchmark against lead value; reduce bids on ad groups with CPA > 30% of LTV."))
-    low_ctr = [c for c in tiktok["top_campaigns"] if c["ctr"] < 0.5 and c["impressions"] > 1000]
-    if low_ctr:
-        recs.append(("warning", f"<strong>{len(low_ctr)} TikTok campaigns</strong> have CTR below 0.50%. Refresh creatives and test new hooks/thumbnails."))
-    if tiktok["inactive_campaigns"]:
-        recs.append(("danger", f"<strong>{len(tiktok['inactive_campaigns'])} TikTok campaigns</strong> are inactive. Review whether to re-enable or retire them."))
-    if tiktok["video_funnel"]["plays"] > 0:
-        completion = tiktok["video_funnel"]["p100"] / tiktok["video_funnel"]["plays"]
-        if completion < 0.05:
-            recs.append(("warning", f"TikTok video completion is only <strong>{fmt_pct(completion)}</strong>. Test shorter videos or stronger hooks in the first 3 seconds."))
-    if tiktok["top_months"]:
-        recs.append(("success", f"Peak TikTok spend month was <strong>{tiktok['top_months'][0]['month']}</strong> ({fmt_sar(tiktok['top_months'][0]['spend'])}). Plan budget increases ahead of similar seasonal windows."))
-    recs.append(("success", "Consolidate TikTok budget into the top 3 campaigns by conversion volume to improve algorithm learning and efficiency."))
-
-    if meta:
-        if meta["total_conversions"] > 0:
-            recs.append(("meta", f"Meta CPA is <strong>SAR {meta['total_spend'] / meta['total_conversions']:,.2f}</strong>. Compare lead quality vs TikTok/Google and reallocate budget to the best CPA campaign: <strong>{meta['best_cpa_campaigns'][0]['name'] if meta['best_cpa_campaigns'] else 'N/A'}</strong>."))
-        if meta["paused_campaigns"]:
-            recs.append(("warning", f"<strong>{len(meta['paused_campaigns'])} Meta campaigns</strong> are paused. If they had good CPA, reactivate them; if poor, keep paused and reallocate budget."))
-        if float(meta["account"].get("balance", 0) or 0) < 500:
-            recs.append(("danger", f"Meta account balance is low (<strong>{fmt_sar(meta['account'].get('balance', 0))}</strong>). Top up soon to avoid delivery interruptions."))
-        recs.append(("meta", "Test Meta Advantage+ Audiences and broader targeting on the best-performing campaign to scale efficiently."))
-
-    if google:
-        if google["total_conversions"] > 0:
-            recs.append(("warning", f"Google Ads CPA is <strong>{fmt_sar(google['total_spend'] / google['total_conversions'])}</strong>. Compare quality of Google leads vs TikTok/Meta leads."))
-        if google["total_spend"] > 0:
-            roas = google['total_conversion_value'] / google['total_spend']
-            recs.append(("danger" if roas < 1 else "warning", f"Google Ads ROAS is <strong>{roas:.2f}x</strong>. {'Revenue does not cover ad spend — review keywords and landing pages.' if roas < 1 else 'Monitor conversion value and optimize for higher-value actions.'}"))
-        if google["inactive_campaigns"]:
-            recs.append(("warning", f"<strong>{len(google['inactive_campaigns'])} Google Ads campaign</strong> is paused. Evaluate if reactivation makes sense."))
-        recs.append(("success", "Google Ads has only 2 campaigns with small budgets. Consider scaling the better performer after reviewing conversion quality."))
-        recs.append(("success", "Add more RSA headlines and descriptions to improve ad strength and auction coverage."))
-
-    for cls, text in recs:
-        html_parts.append(f"    <li class='{cls}'>{text}</li>\n")
-
-    html_parts.append("""  </ul>
-</div>
-""")
-
-    html_parts.append("""<footer>
-  Generated by automated audit pipeline · Raw data in <code>raw/</code> folder
-</footer>
-
-<script>
-""")
-    html_parts.append(f"""
-const tiktokDailyCtx = document.getElementById('tiktokDailyChart').getContext('2d');
-new Chart(tiktokDailyCtx, {{
-  type: 'bar',
-  data: {{
-    labels: {json.dumps(tiktok_daily_labels)},
-    datasets: [
-      {{
-        label: 'Spend (SAR)',
-        data: {json.dumps(tiktok_daily_spend)},
-        backgroundColor: 'rgba(56, 189, 248, 0.7)',
-        yAxisID: 'y'
-      }},
-      {{
-        label: 'Conversions',
-        data: {json.dumps(tiktok_daily_conv)},
-        type: 'line',
-        borderColor: 'rgba(168, 85, 247, 1)',
-        backgroundColor: 'rgba(168, 85, 247, 0.2)',
-        yAxisID: 'y1',
-        tension: 0.3
-      }}
-    ]
-  }},
-  options: {{
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {{ mode: 'index', intersect: false }},
-    scales: {{
-      y: {{ type: 'linear', display: true, position: 'left', grid: {{ color: 'rgba(255,255,255,0.05)' }} }},
-      y1: {{ type: 'linear', display: true, position: 'right', grid: {{ drawOnChartArea: false }} }},
-      x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }}
-    }},
-    plugins: {{ legend: {{ labels: {{ color: '#f8fafc' }} }} }}
-  }}
-}});
-
-const tiktokMonthlyCtx = document.getElementById('tiktokMonthlyChart').getContext('2d');
-new Chart(tiktokMonthlyCtx, {{
-  type: 'bar',
-  data: {{
-    labels: {json.dumps(tiktok_month_labels)},
-    datasets: [{{
-      label: 'Spend (SAR)',
-      data: {json.dumps(tiktok_month_spend)},
-      backgroundColor: 'rgba(56, 189, 248, 0.7)'
-    }}]
-  }},
-  options: {{
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {{ y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }} }},
-    plugins: {{ legend: {{ labels: {{ color: '#f8fafc' }} }} }}
-  }}
-}});
-
-const tiktokDowCtx = document.getElementById('tiktokDowChart').getContext('2d');
-new Chart(tiktokDowCtx, {{
-  type: 'bar',
-  data: {{
-    labels: {json.dumps(tiktok_dow_labels)},
-    datasets: [{{
-      label: 'Spend (SAR)',
-      data: {json.dumps(tiktok_dow_spend)},
-      backgroundColor: 'rgba(168, 85, 247, 0.7)'
-    }}]
-  }},
-  options: {{
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {{ y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }} }},
-    plugins: {{ legend: {{ labels: {{ color: '#f8fafc' }} }} }}
-  }}
-}});
-""")
-
-    if meta:
-        html_parts.append(f"""
-const metaCampaignCtx = document.getElementById('metaCampaignChart').getContext('2d');
-new Chart(metaCampaignCtx, {{
-  type: 'doughnut',
-  data: {{
-    labels: {json.dumps(meta_month_labels[:10])},
-    datasets: [{{
-      data: {json.dumps(meta_month_spend[:10])},
-      backgroundColor: [
-        'rgba(244, 63, 94, 0.8)',
-        'rgba(56, 189, 248, 0.8)',
-        'rgba(34, 197, 94, 0.8)',
-        'rgba(245, 158, 11, 0.8)',
-        'rgba(168, 85, 247, 0.8)',
-        'rgba(236, 72, 153, 0.8)',
-        'rgba(99, 102, 241, 0.8)',
-        'rgba(20, 184, 166, 0.8)',
-        'rgba(251, 146, 60, 0.8)',
-        'rgba(139, 92, 246, 0.8)'
-      ]
-    }}]
-  }},
-  options: {{
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {{ legend: {{ position: 'right', labels: {{ color: '#f8fafc' }} }} }}
-  }}
-}});
-""")
-
-    if google:
-        html_parts.append(f"""
-const googleMonthlyCtx = document.getElementById('googleMonthlyChart').getContext('2d');
-new Chart(googleMonthlyCtx, {{
-  type: 'bar',
-  data: {{
-    labels: {json.dumps(google_month_labels)},
-    datasets: [{{
-      label: 'Spend (SAR)',
-      data: {json.dumps(google_month_spend)},
-      backgroundColor: 'rgba(34, 197, 94, 0.7)'
-    }}]
-  }},
-  options: {{
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {{ y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }} }},
-    plugins: {{ legend: {{ labels: {{ color: '#f8fafc' }} }} }}
-  }}
-}});
-
-const googleDowCtx = document.getElementById('googleDowChart').getContext('2d');
-new Chart(googleDowCtx, {{
-  type: 'line',
-  data: {{
-    labels: {json.dumps(google_dow_labels)},
-    datasets: [{{
-      label: 'CPA (SAR)',
-      data: {json.dumps(google_dow_cpa)},
-      borderColor: 'rgba(34, 197, 94, 1)',
-      backgroundColor: 'rgba(34, 197, 94, 0.2)',
-      tension: 0.3,
-      fill: true
-    }}]
-  }},
-  options: {{
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {{ y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, x: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }} }} }},
-    plugins: {{ legend: {{ labels: {{ color: '#f8fafc' }} }} }}
-  }}
-}});
-""")
-
-    html_parts.append("""
-</script>
-</body>
-</html>
-""")
-
-    (OUT_DIR / "index.html").write_text("".join(html_parts), encoding="utf-8")
-    print(f"Enhanced HTML report written to {OUT_DIR / 'index.html'}")
+    for filename, html in pages.items():
+        (OUT_DIR / filename).write_text(html, encoding="utf-8")
+        print(f"Wrote {OUT_DIR / filename} ({len(html):,} bytes)")
 
 
 if __name__ == "__main__":

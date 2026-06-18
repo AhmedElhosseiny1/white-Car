@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Car Ads Audit | Overview</title>
+  <title>White Car Ads Audit | Google Ads</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -361,73 +361,137 @@
     <span class="nav-title">White Car Ads Audit</span>
   </div>
   <div class="nav-tabs">
-    <a href="index.html" class="active">Overview</a><a href="tiktok.html" class="">TikTok</a><a href="meta.html" class="">Meta</a><a href="google.html" class="">Google Ads</a>
+    <a href="index.html" class="">Overview</a><a href="tiktok.html" class="">TikTok</a><a href="meta.html" class="">Meta</a><a href="google.html" class="active">Google Ads</a>
   </div>
 </nav>
 
 <div class="hero">
-  <h1>White Car Cross-Platform Ads Audit</h1>
-  <p>Unified overview of TikTok, Meta, and Google Ads performance</p>
+  <h1><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="platform-icon" alt="Google"> Google Ads</h1>
+  <p>Account: white car (3482883125)</p>
 </div>
 <div class="container">
+  
+<div class="filters">
+  <label>Start Date
+    <input type="date" id="startDate" data-platform="google">
+  </label>
+  <label>End Date
+    <input type="date" id="endDate" data-platform="google">
+  </label>
+  <label>Campaign Status
+    <select id="statusFilter" data-platform="google">
+      <option value="all">All</option>
+      <option value="active">Active / Enabled</option>
+      <option value="inactive">Paused / Disabled</option>
+    </select>
+  </label>
+  <label>Min Spend (SAR)
+    <input type="number" id="minSpend" placeholder="0" data-platform="google">
+  </label>
+  <button onclick="applyFilters('google')">Apply Filters</button>
+  <button onclick="resetFilters('google')" style="background:#475569">Reset</button>
+</div>
+
   <div class="kpis">
-    <div class="kpi"><div class="kpi-label">Total Spend</div><div class="kpi-value">SAR 140,178.16</div></div>
-    <div class="kpi"><div class="kpi-label">Total Conversions</div><div class="kpi-value">19,836</div></div>
-    <div class="kpi"><div class="kpi-label">Blended CPA</div><div class="kpi-value">SAR 7.07</div></div>
-    <div class="kpi"><div class="kpi-label">Platforms</div><div class="kpi-value">3</div></div>
+    <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value">SAR 3,233.56</div></div>
+    <div class="kpi"><div class="kpi-label">Conversions</div><div class="kpi-value">738</div></div>
+    <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-value">16,943</div></div>
+    <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value">1,577</div></div>
+    <div class="kpi sub"><div class="kpi-label">Conv. Value</div><div class="kpi-value">SAR 738.00</div></div>
+    <div class="kpi sub"><div class="kpi-label">ROAS</div><div class="kpi-value">0.23x</div></div>
+    <div class="kpi sub"><div class="kpi-label">Campaigns</div><div class="kpi-value">2 (1 active)</div></div>
   </div>
 
-  <h2 class="section-title">Platform Breakdown</h2>
-  <div class="platform-grid">
-    
-    <div class="platform-card tiktok">
-      <h3><img src="https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" class="platform-icon" alt="Tiktok"> TikTok</h3>
-      <div class="metric-row"><span>Spend</span><span>SAR 127,850.18</span></div>
-      <div class="metric-row"><span>Conversions</span><span>17,399</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>20 (2 active)</span></div>
-      <div class="metric-row"><span>CTR</span><span>0.01%</span></div>
-      <a href="tiktok.html">View TikTok report &rarr;</a>
-    </div>
-    <div class="platform-card meta">
-      <h3><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" class="platform-icon" alt="Meta"> Meta Ads</h3>
-      <div class="metric-row"><span>Spend</span><span>SAR 9,094.42</span></div>
-      <div class="metric-row"><span>Conversions</span><span>1,699</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>13 (0 active)</span></div>
-      <div class="metric-row"><span>CTR</span><span>1.70%</span></div>
-      <a href="meta.html">View Meta report &rarr;</a>
-    </div>
-    <div class="platform-card google">
-      <h3><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="platform-icon" alt="Google"> Google Ads</h3>
-      <div class="metric-row"><span>Spend</span><span>SAR 3,233.56</span></div>
-      <div class="metric-row"><span>Conversions</span><span>738</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>2 (1 active)</span></div>
-      <div class="metric-row"><span>CTR</span><span>9.31%</span></div>
-      <a href="google.html">View Google report &rarr;</a>
-    </div>
-  </div>
+  <div class="card"><h2>Campaigns</h2><div style="overflow-x:auto"><table class="data-table" id="googleCampaignsTable">
+    <tr>
+      <th>Campaign</th><th>Spend</th><th>Impr.</th><th>Clicks</th><th>Conv.</th><th>Conv. Value</th>
+      <th>CTR</th><th>CPC</th><th>CPA</th><th>ROAS</th><th>Conv. Rate</th>
+    </tr><tbody>
+    <tr data-status="enabled" data-spend="2909.99">
+      <td><strong>29-2</strong><br><span class="pill">23605396515</span></td>
+      <td>SAR 2,909.99</td>
+      <td>16,374</td>
+      <td>1,478</td>
+      <td>732</td>
+      <td>SAR 732.00</td>
+      <td>9.03%</td>
+      <td>SAR 1.97</td>
+      <td>SAR 3.98</td>
+      <td>0.25x</td>
+      <td>49.53%</td>
+    </tr>
+    <tr data-status="enabled" data-spend="323.56">
+      <td><strong>9-2</strong><br><span class="pill">23543619801</span></td>
+      <td>SAR 323.56</td>
+      <td>569</td>
+      <td>99</td>
+      <td>6</td>
+      <td>SAR 6.00</td>
+      <td>17.40%</td>
+      <td>SAR 3.27</td>
+      <td>SAR 53.93</td>
+      <td>0.02x</td>
+      <td>6.06%</td>
+    </tr></tbody></table></div></div>
 
   <div class="grid-2">
-    <div class="card"><h2>Spend by Platform</h2><div class="chart-wrap"><canvas id="spendByPlatformChart"></canvas></div></div>
-    <div class="card"><h2>Conversions by Platform</h2><div class="chart-wrap"><canvas id="convByPlatformChart"></canvas></div></div>
+    <div class="card"><h2>Spend by Campaign</h2><div class="chart-wrap"><canvas id="googleSpendChart"></canvas></div></div>
+    <div class="card"><h2>Conversions by Campaign</h2><div class="chart-wrap"><canvas id="googleConvChart"></canvas></div></div>
   </div>
 
-  <h2 class="section-title">Top Spend Campaigns by Platform</h2>
   <div class="grid-3">
-    <div class="card"><h2>TikTok Top Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>1863327990726769</td><td>SAR 12,176.21</td><td>2,005</td><td>SAR 6.07</td></tr><tr><td>1860754177030226</td><td>SAR 10,942.84</td><td>2,064</td><td>SAR 5.30</td></tr><tr><td>1863250613109794</td><td>SAR 10,605.82</td><td>1,433</td><td>SAR 7.40</td></tr><tr><td>1858320960660641</td><td>SAR 9,586.84</td><td>849</td><td>SAR 11.29</td></tr><tr><td>1859104155397234</td><td>SAR 7,947.25</td><td>851</td><td>SAR 9.34</td></tr></tbody></table></div></div>
-    <div class="card"><h2>Meta Top Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>2</td><td>SAR 2,692.95</td><td>399</td><td>SAR 6.75</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 1,116.82</td><td>403</td><td>SAR 2.77</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 812.69</td><td>67</td><td>SAR 12.13</td></tr><tr><td>‏حملة إعلانية جديدة بهدف العملاء المحتمل</td><td>SAR 755.27</td><td>38</td><td>SAR 19.88</td></tr><tr><td>ماهر</td><td>SAR 721.91</td><td>186</td><td>SAR 3.88</td></tr></tbody></table></div></div>
-    <div class="card"><h2>Google Top Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>29-2</td><td>SAR 2,909.99</td><td>732</td><td>0.25x</td></tr><tr><td>9-2</td><td>SAR 323.56</td><td>6</td><td>0.02x</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Monthly Spend</h2><div class="chart-wrap small"><canvas id="googleMonthlyChart"></canvas></div></div>
+    <div class="card"><h2>Device Breakdown</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Device</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>Mobile</td><td>SAR 3,131.65</td><td>727</td><td>0.23x</td></tr><tr><td>Desktop</td><td>SAR 70.29</td><td>3</td><td>0.04x</td></tr><tr><td>Tablet</td><td>SAR 33.70</td><td>8</td><td>0.24x</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Day of Week</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Day</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>Monday</td><td>SAR 535.01</td><td>356</td><td>0.67x</td></tr><tr><td>Tuesday</td><td>SAR 637.32</td><td>67</td><td>0.11x</td></tr><tr><td>Wednesday</td><td>SAR 648.74</td><td>77</td><td>0.12x</td></tr><tr><td>Thursday</td><td>SAR 236.56</td><td>59</td><td>0.25x</td></tr><tr><td>Friday</td><td>SAR 268.00</td><td>59</td><td>0.22x</td></tr><tr><td>Saturday</td><td>SAR 267.82</td><td>62</td><td>0.23x</td></tr><tr><td>Sunday</td><td>SAR 642.19</td><td>58</td><td>0.09x</td></tr></tbody></table></div></div>
   </div>
 
-  <h2 class="section-title">Recommendations</h2>
-  <div class="recommendation"><h4>Google ROAS below 2x</h4><p>Expand high-converting keywords/ad groups and review search terms report for waste.</p></div><div class="recommendation"><h4>Meta campaigns are paused</h4><p>Restart top-performing lead campaigns or reallocate budget to TikTok/Google.</p></div>
+  <h2 class="section-title">Ad Group Insights</h2>
+  <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>ROAS</th></tr></thead><tbody><tr><td>المجموعة الإعلانية رقم 1</td><td>29-2</td><td>SAR 2,912.07</td><td>732</td><td>SAR 3.98</td><td>0.25x</td></tr><tr><td>المجموعة الإعلانية رقم 1</td><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td><td>0.02x</td></tr></tbody></table></div></div>
+
+  <div class="card"><h2>Best CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>29-2</td><td>SAR 2,909.99</td><td>732</td><td>SAR 3.98</td></tr><tr><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td></tr></tbody></table></div></div>
 </div>
 <div class="footer">Generated on 2026-06-18 13:08</div>
 <script>
-const platformLabels = ["TikTok", "Meta", "Google"];
-const platformSpend = [127850.18, 9094.42, 3233.56];
-const platformConv = [17399, 1699, 738];
-const palette = ['#000000', '#1877f2', '#4285f4'];
-new Chart(document.getElementById('spendByPlatformChart'), {type:'doughnut', data:{labels:platformLabels, datasets:[{data:platformSpend, backgroundColor:palette.slice(0, platformLabels.length), borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}});
-new Chart(document.getElementById('convByPlatformChart'), {type:'bar', data:{labels:platformLabels, datasets:[{label:'Conversions', data:platformConv, backgroundColor:palette.slice(0, platformLabels.length), borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+const googleLabels = ["29-2", "9-2"];
+const googleSpend = [2909.994921, 323.564754];
+const googleConv = [732, 6];
+const googleMonthLabels = ["2026-03-01", "2026-06-01", "2026-02-01"];
+const googleMonthSpend = [2733.458901, 298.987273, 201.113501];
+new Chart(document.getElementById('googleSpendChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'Spend (SAR)', data:googleSpend, backgroundColor:'#4285f4', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('googleConvChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'Conversions', data:googleConv, backgroundColor:'#34a853', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('googleMonthlyChart'), {type:'line', data:{labels:googleMonthLabels, datasets:[{label:'Spend', data:googleMonthSpend, borderColor:'#4285f4', backgroundColor:'rgba(66,133,244,0.1)', fill:true, tension:0.3}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 </script>
 </body></html>
+
+<script>
+function applyFilters(platform){
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const status = document.getElementById('statusFilter').value;
+  const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
+  const tableIds = {
+    tiktok: 'tiktokCampaignsTable',
+    meta: 'metaCampaignsTable',
+    google: 'googleCampaignsTable'
+  };
+  const table = document.getElementById(tableIds[platform]);
+  if(!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    let show = true;
+    const rowStatus = row.getAttribute('data-status') || '';
+    const rowSpend = parseFloat(row.getAttribute('data-spend') || 0);
+    if(status === 'active' && !(rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(status === 'inactive' && (rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(rowSpend < minSpend) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+function resetFilters(platform){
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('minSpend').value = '';
+  applyFilters(platform);
+}
+</script>
