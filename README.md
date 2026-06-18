@@ -16,7 +16,10 @@ Open the latest audit report here:
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Self-contained HTML report with charts |
+| `index.html` | Cross-platform overview with charts |
+| `tiktok.html` | TikTok Ads deep dive with filters |
+| `meta.html` | Meta Ads deep dive with filters |
+| `google.html` | Google Ads deep dive with filters |
 | `audit_report.md` | Markdown version of the report |
 | `raw/` | Raw API responses from Pipeboard MCP |
 | `fetch_data.sh` | Fetches fresh data from all three ad platforms |
@@ -34,11 +37,11 @@ export PIPEBOARD_API_TOKEN=pk_your_token_here
 bash fetch_data.sh
 
 # 3. Generate reports
-python3 generate_html_report.py
+python3 generate_html_report.py  # generates index.html, tiktok.html, meta.html, google.html
 python3 generate_report.py
 
 # 4. Open the report
-open index.html
+open index.html  # or open tiktok.html / meta.html / google.html
 ```
 
 ## Automation
