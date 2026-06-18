@@ -44,17 +44,22 @@ python3 generate_report.py
 open index.html  # or open tiktok.html / meta.html / google.html
 ```
 
-## New Insights
+## Client-Ready Audit Structure
 
-The report now surfaces deeper performance intelligence:
+The report has moved from raw numbers to actionable interpretation:
 
-- **CPA as the leading metric** — shown in overview KPIs and a dedicated platform comparison chart.
-- **Top performing weekdays** — ranked by CPA/ROAS for each platform.
-- **Hourly performance** — hour-of-day spend & CPA charts.
-- **Weekday × hour heatmap** — Google Ads has full day-of-week + hour granularity.
-- **Audience breakdowns** — Meta Ads age, gender, and region performance.
+- **Executive Summary** — explains what happened, platform dependency risk, and the next priority.
+- **Metadata bar** — reporting period, data source, attribution window, and conversion definition.
+- **Platform Mix & Dependency Risk** — spend share, conversion share, CPA, and strategic role per platform.
+- **Data Quality Issues** — flags naming gaps, status inconsistencies, and missing breakdowns.
+- **Lead Quality Funnel** — shows Platform CPA vs Real CPA and the lifecycle stages to track.
+- **Campaign Classification** — TikTok campaigns labelled Scale / Test / Reduce / Pause.
+- **Budget Reallocation Plan** — what to do on each platform.
+- **14-Day Optimization Roadmap** — timeline, actions, and owners.
+- **Tracking & Measurement Gaps** — CRM, UTM, deduplication, and lifecycle tracking.
+- **Anomalies & Red Flags** — suspicious patterns and risks.
 
-> Note: audience/heatmap sections populate when the underlying API data is available. Some dimensions (TikTok age/gender/location, Google Ads age/gender location) are not exposed by the current Pipeboard MCP endpoints.
+> Note: audience/heatmap sections populate when the underlying API data is available. Some dimensions (TikTok age/gender/location, Google Ads age/gender/location) are not exposed by the current Pipeboard MCP endpoints.
 
 ## Automation
 
