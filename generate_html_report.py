@@ -1586,6 +1586,10 @@ def overview_page(tiktok, meta, google, logo_b64):
 
   <h2 class="section-title">Platform Mix & Efficiency</h2>
   <div class="grid-2">
+    {chart_spend_share}
+    {chart_conv_share}
+  </div>
+  <div class="grid-2">
     {chart_cpa}
     {chart_spend_conv}
   </div>
@@ -1628,6 +1632,8 @@ def overview_page(tiktok, meta, google, logo_b64):
         kpi_blended_cpa=kpi_card('Blended CPA', fmt_sar(overall_cpa)),
         kpi_platforms=kpi_card('Platforms', sum([1, bool(meta), bool(google)])),
         exec_summary=executive_summary(tiktok, meta, google),
+        chart_spend_share=render_chart_card('Spend Share', 'spendByPlatformChart'),
+        chart_conv_share=render_chart_card('Conversions by Platform', 'convByPlatformChart'),
         chart_cpa=render_chart_card('CPA by Platform', 'cpaByPlatformChart'),
         chart_spend_conv=render_chart_card('Spend vs Conversions', 'spendVsConvChart'),
         cards="".join(cards),
