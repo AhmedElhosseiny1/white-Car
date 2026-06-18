@@ -738,6 +738,92 @@ document.addEventListener('DOMContentLoaded', () => {{
   document.querySelectorAll('.kpi-value').forEach(el => counterObserver.observe(el));
 }});
 </script>
+
+<script>
+(function() {{
+  const DICT = {{
+    "Overview": "نظرة عامة", "TikTok": "تيك توك", "Meta": "ميتا", "Google Ads": "إعلانات جوجل",
+    "White Car Ads Audit": "تدقيق إعلانات وايت كار",
+    "Start Date": "تاريخ البدء", "End Date": "تاريخ الانتهاء", "Campaign Status": "حالة الحملة",
+    "Min Spend (SAR)": "الحد الأدنى للإنفاق (ر.س)", "Apply Filters": "تطبيق الفلاتر", "Reset": "إعادة تعيين",
+    "All": "الكل", "Active / Enabled": "نشط / مفعّل", "Paused / Disabled": "متوقف / معطل",
+    "Active": "نشط", "Paused": "متوقف", "Unknown": "غير معروف",
+    "Total Spend": "إجمالي الإنفاق", "Total Conversions": "إجمالي التحويلات", "Blended CPA": "متوسط تكلفة التحويل", "Platforms": "المنصات",
+    "Spend": "الإنفاق", "Conversions": "التحويلات", "Impressions": "الظهور", "Clicks": "النقرات",
+    "CTR": "معدل النقر", "CPC": "تكلفة النقرة", "CPA": "تكلفة التحويل", "Reach": "الوصول",
+    "Conv. Value": "قيمة التحويل", "ROAS": "العائد على الإنفاق", "Campaigns": "الحملات",
+    "Lifetime Spend": "إجمالي الإنفاق", "Video VTR": "معدل مشاهدة الفيديو", "Completion": "الاكتمال", "Conv. Rate": "معدل التحويل",
+    "Campaign": "الحملة", "Status": "الحالة", "Objective": "الهدف", "Impr.": "الظهور", "Conv.": "التحويل",
+    "Spend Share": "حصة الإنفاق", "Conversions by Platform": "التحويلات حسب المنصة", "Conversions by Campaign": "التحويلات حسب الحملة",
+    "CPA by Platform": "تكلفة التحويل حسب المنصة", "Spend vs Conversions": "الإنفاق مقابل التحويلات",
+    "Spend by Campaign": "الإنفاق حسب الحملة", "Monthly Trend": "الاتجاه الشهري", "Device Breakdown": "التفصيل حسب الجهاز",
+    "Day-of-Week CPA Heatmap": "خريطة حرارية لتكلفة التحويل حسب اليوم", "Age & Gender": "العمر والجنس", "Region": "المنطقة",
+    "Hourly Performance": "الأداء حسب الساعة", "Top Campaigns": "أهم الحملات", "Top Spend Campaigns by Platform": "أعلى الحملات إنفاقًا حسب المنصة",
+    "Campaign Classification": "تصنيف الحملات", "Scale Winners": "الرابحون القابلون للتوسع", "Expensive Volume": "حجم مكلف", "Poor Signal": "إشارة ضعيفة",
+    "Platform Mix & Efficiency": "مزيج المنصات والكفاءة", "Platform Mix & Dependency Risk": "مزيج المنصات ومخاطر الاعتماد",
+    "Lead Quality & CRM Funnel": "جودة العملاء المحتملين وقمع CRM", "Data Quality Issues": "مشكلات جودة البيانات",
+    "Strategic Recommendations": "التوصيات الاستراتيجية", "14-Day Action Roadmap": "خطة العمل لمدة 14 يومًا",
+    "Tracking & Measurement Gaps": "فجوات التتبع والقياس", "Executive Summary": "الملخص التنفيذي",
+    "TikTok Ads Deep Dive": "تحليل عميق لإعلانات تيك توك", "Meta Ads Deep Dive": "تحليل عميق لإعلانات ميتا", "Google Ads Deep Dive": "تحليل عميق لإعلانات جوجل",
+    "Performance Deep Dive": "تحليل الأداء العميق", "Creative Performance": "أداء الإبداع", "Timing & Efficiency": "التوقيت والكفاءة", "Audience Performance": "أداء الجمهور",
+    "Anomalies & Red Flags": "الحالات الشاذة والعلامات الحمراء",
+    "No campaign data available.": "لا توجد بيانات حملات متاحة.", "No data available.": "لا توجد بيانات متاحة.",
+    "Reporting period": "فترة الإبلاغ", "Data source": "مصدر البيانات", "Attribution": "النسبة", "Conversion definition": "تعريف التحويل",
+    "Platform default attribution windows": "نوافذ النسبة الافتراضية للمنصة",
+    "TikTok: Lead Generation form submits · Meta: Lead / messaging / form actions · Google: Form/call conversions": "تيك توك: إرسالات نموذج جلب العملاء · ميتا: عملاء / رسائل / إجراءات النموذج · جوجل: تحويلات النموذج/المكالمات",
+    "Key insight from the audit": "رؤية رئيسية من التدقيق",
+    "Advertiser:": "المعلن:", "Account:": "الحساب:", "Objective:": "الهدف:",
+    "Lead Generation": "جلب العملاء المحتملين", "Lead Generation / Conversations": "جلب العملاء / المحادثات",
+    "High-intent search & Performance Max": "بحث عالي النية و Performance Max",
+    "Google": "جوجل", "TikTok": "تيك توك", "Meta": "ميتا",
+    "Scale / volume driver": "محرك النطاق والحجم", "Audience test / retarget": "اختبار الجمهور / إعادة الاستهداف", "High-intent capture": "التقاط النية العالية",
+    "View TikTok deep dive →": "عرض تحليل تيك توك العميق →", "View Meta deep dive →": "عرض تحليل ميتا العميق →", "View Google deep dive →": "عرض تحليل جوجل العميق →",
+    "Generated on": "تم الإنشاء في"
+  }};
+  const REVERSE = Object.fromEntries(Object.entries(DICT).map(([k, v]) => [v, k]));
+
+  function translateTree(lang) {{
+    const map = lang === 'ar' ? DICT : REVERSE;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) {{
+      if (!node.parentElement) continue;
+      if (node.parentElement.hasAttribute('data-en') || node.parentElement.closest('[data-en]')) continue;
+      const tag = node.parentElement.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      nodes.push(node);
+    }}
+    nodes.forEach(node => {{
+      let text = node.textContent;
+      Object.keys(map).forEach(key => {{
+        text = text.split(key).join(map[key]);
+      }});
+      node.textContent = text;
+    }});
+  }}
+
+  const langToggle = document.getElementById('langToggle');
+  function setLang(lang) {{
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    localStorage.setItem('wc-lang', lang);
+    document.querySelectorAll('[data-en][data-ar]').forEach(el => {{
+      el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.en;
+    }});
+    translateTree(lang);
+    if (langToggle) langToggle.textContent = lang === 'ar' ? langToggle.dataset.ar : langToggle.dataset.en;
+  }}
+  if (langToggle) {{
+    langToggle.addEventListener('click', () => {{
+      const newLang = document.documentElement.lang === 'ar' ? 'en' : 'ar';
+      setLang(newLang);
+    }});
+  }}
+  const savedLang = localStorage.getItem('wc-lang') || 'en';
+  if (savedLang === 'ar') setLang('ar');
+}})();
+</script>
 </body></html>"""
 
 
@@ -780,12 +866,16 @@ def executive_summary(tiktok, meta, google):
     if tiktok_share > 80:
         risk = "heavy platform dependency"
         risk_detail = "TikTok is carrying most of the spend and conversions. This drives scale but creates concentration risk."
+        risk_detail_ar = "تيك توك تتحمل معظم الإنفاق والتحويلات. هذا يحقق النطاق ولكنه يخلق مخاطر تركيز."
     elif tiktok_share > 50:
         risk = "TikTok-led mix"
         risk_detail = "TikTok dominates volume; Meta and Google are underfunded relative to their CPA potential."
+        risk_detail_ar = "تيك توك تهيمن على الحجم؛ ميتا وجوجل غير ممولتين بما يتناسب مع إمكانات تكلفة التحويل."
     else:
         risk = "balanced mix"
         risk_detail = "Spend is distributed across platforms, though volumes differ significantly."
+        risk_detail_ar = "الإنفاق موزع عبر المنصات، على الرغم من اختلاف الحجوم بشكل كبير."
+    platform_name_ar = {"Google": "جوجل", "Meta": "ميتا", "TikTok": "تيك توك"}
 
     best_cpa_platform = "Google"
     best_cpa_value = google["cpa"] if google else 999999
@@ -798,21 +888,21 @@ def executive_summary(tiktok, meta, google):
 
     return f"""
 <div class="card exec-summary">
-  <h2>Executive Summary</h2>
-  <p class="lead">
+  <h2 data-en="Executive Summary" data-ar="الملخص التنفيذي">Executive Summary</h2>
+  <p class="lead" data-en="White Car generated {fmt_num(total_conv)} total platform conversions at a blended CPA of {fmt_sar(blended_cpa)}, with TikTok driving the majority of scale. TikTok represents around {tiktok_share:.0f}% of spend and {tiktok_conv_share:.0f}% of conversions. {risk_detail}" data-ar="حققت وايت كار {fmt_num(total_conv)} تحويلة عبر المنصات بتكلفة تحويل متوسطة {fmt_sar(blended_cpa)}، مع قيادة تيك توك لمعظم النطاق. تمثل تيك توك حوالي {tiktok_share:.0f}% من الإنفاق و {tiktok_conv_share:.0f}% من التحويلات. {risk_detail_ar}">
     White Car generated <strong>{fmt_num(total_conv)} total platform conversions</strong> at a blended CPA of <strong>{fmt_sar(blended_cpa)}</strong>,
     with TikTok driving the majority of scale. TikTok represents around <strong>{tiktok_share:.0f}% of spend</strong> and
     <strong>{tiktok_conv_share:.0f}% of conversions</strong>. {risk_detail}
   </p>
-  <p>
+  <p data-en="The most efficient platform by reported CPA is {best_cpa_platform} ({fmt_sar(best_cpa_value)}), but its spend volume is much smaller, so performance should be validated by lead quality before major budget shifts. The next priority is to validate lead quality, connect ad conversions to CRM outcomes, and restructure campaign naming, tracking, and budget allocation." data-ar="المنصة الأكثر كفاءة من حيث تكلفة التحويل المبلغ عنها هي {platform_name_ar.get(best_cpa_platform, best_cpa_platform)} ({fmt_sar(best_cpa_value)})، ولكن حجم إنفاقها أصغر بكثير، لذا يجب التحقق من جودة العملاء المحتملين قبل إعادة توزيع الميزانية. الأولوية التالية هي التحقق من جودة العملاء المحتملين، وربط تحويلات الإعلانات بنتائج CRM، وإعادة هيكلة تسمية الحملات والتتبع وتوزيع الميزانية.">
     The most efficient platform by reported CPA is <strong>{best_cpa_platform} ({fmt_sar(best_cpa_value)})</strong>,
     but its spend volume is much smaller, so performance should be validated by lead quality before major budget shifts.
     The next priority is to validate lead quality, connect ad conversions to CRM outcomes, and restructure campaign naming, tracking, and budget allocation.
   </p>
 </div>
-<blockquote class="pull-quote reveal">
+<blockquote class="pull-quote reveal" data-en="TikTok is the engine of White Car's paid acquisition — but over-dependence on one channel is the single biggest strategic risk hiding in plain sight." data-ar="تيك توك هي محرك اكتساب وايت كار المدفوع — ولكن الاعتماد المفرط على قناة واحدة هو أكبر مخاطر استراتيجية تختبئ في واضح الأمر.">
   TikTok is the engine of White Car's paid acquisition — but over-dependence on one channel is the single biggest strategic risk hiding in plain sight.
-  <cite>Key insight from the audit</cite>
+  <cite data-en="Key insight from the audit" data-ar="رؤية رئيسية من التدقيق">Key insight from the audit</cite>
 </blockquote>
 """
 
@@ -988,16 +1078,16 @@ def anomalies_red_flags(tiktok, meta, google):
 
 def strategic_recommendations(tiktok, meta, google):
     recs = [
-        ("1. Do not judge performance by CPA alone", "TikTok drives the majority of leads, but the business must validate which platform produces qualified leads and sales opportunities."),
-        ("2. Reduce TikTok waste before scaling", "Campaigns above the blended CPA should be reviewed, especially high-spend campaigns with CPA above SAR 9–13."),
-        ("3. Relaunch Meta with a cleaner structure", "Meta shows strong CPA potential, but the current setup appears paused or inconsistent. Relaunch with separated audiences, clear naming, and creative testing."),
-        ("4. Give Google a controlled scale test", "Google has the lowest CPA, but spend is very small. Increase gradually only after reviewing search terms and lead quality."),
-        ("5. Add CRM outcome tracking", "The report should show not only leads, but qualified leads, sales calls, appointments, visits, and closed deals."),
-        ("6. Build a creative testing system", "TikTok and Meta need weekly creative testing by hook, car model, offer, and audience segment."),
+        ("1. Do not judge performance by CPA alone", "لا تحكم على الأداء بناءً على تكلفة التحويل وحدها", "TikTok drives the majority of leads, but the business must validate which platform produces qualified leads and sales opportunities.", "تيك توك يقود غالبية العملاء المحتملين، ولكن يجب على العمل التحقق من أي منصة تنتج عملاء مؤهلين وفرص مبيعات."),
+        ("2. Reduce TikTok waste before scaling", "قلل الهدر في تيك توك قبل التوسع", "Campaigns above the blended CPA should be reviewed, especially high-spend campaigns with CPA above SAR 9–13.", "يجب مراجعة الحملات التي تتجاوز متوسط تكلفة التحويل، وخاصة الحملات ذات الإنفاق العالي بتكلفة تحويل تزيد عن 9–13 ر.س."),
+        ("3. Relaunch Meta with a cleaner structure", "أعد إطلاق ميتا بهيكل أنظف", "Meta shows strong CPA potential, but the current setup appears paused or inconsistent. Relaunch with separated audiences, clear naming, and creative testing.", "تظهر ميتا إمكانية قوية لتكلفة التحويل، ولكن الإعداد الحالي يبدو متوقفًا أو غير متسق. أعد الإطلاق مع جماعات منفصلة وتسميات واضحة واختبار إبداعي."),
+        ("4. Give Google a controlled scale test", "امنح جوجل اختبار توسع متحكم فيه", "Google has the lowest CPA, but spend is very small. Increase gradually only after reviewing search terms and lead quality.", "تمتلك جوجل أقل تكلفة تحويل، ولكن الإنفاق صغير جدًا. زد تدريجيًا فقط بعد مراجعة مصطلحات البحث وجودة العملاء المحتملين."),
+        ("5. Add CRM outcome tracking", "أضف تتبع نتائج CRM", "The report should show not only leads, but qualified leads, sales calls, appointments, visits, and closed deals.", "يجب أن يظهر التقرير ليس فقط العملاء المحتملين، بل العملاء المؤهلين ومكالمات المبيعات والمواعيد والزيارات والصفقات المغلقة."),
+        ("6. Build a creative testing system", "ابنِ نظام اختبار إبداعي", "TikTok and Meta need weekly creative testing by hook, car model, offer, and audience segment.", "يحتاج تيك توك وميتا إلى اختبار إبداعي أسبوعي حسب النقطة الجذابة وموديل السيارة والعرض والجمهور."),
     ]
-    html = '<div class="card"><h2>Strategic Recommendations</h2>'
-    for title, body in recs:
-        html += f'<div class="recommendation"><h4>{title}</h4><p>{body}</p></div>'
+    html = '<div class="card"><h2 data-en="Strategic Recommendations" data-ar="التوصيات الاستراتيجية">Strategic Recommendations</h2>'
+    for title, title_ar, body, body_ar in recs:
+        html += f'<div class="recommendation"><h4 data-en="{title}" data-ar="{title_ar}">{title}</h4><p data-en="{body}" data-ar="{body_ar}">{body}</p></div>'
     html += '</div>'
     return html
 
@@ -1005,23 +1095,26 @@ def strategic_recommendations(tiktok, meta, google):
 def render_nav(active_tab, logo_b64):
     logo_html = f'<img src="data:image/png;base64,{logo_b64}" alt="White Car" class="nav-logo">' if logo_b64 else ""
     tabs = [
-        ("index.html", "Overview", "overview"),
-        ("tiktok.html", "TikTok", "tiktok"),
-        ("meta.html", "Meta", "meta"),
-        ("google.html", "Google Ads", "google"),
+        ("index.html", "Overview", "overview", "نظرة عامة"),
+        ("tiktok.html", "TikTok", "tiktok", "تيك توك"),
+        ("meta.html", "Meta", "meta", "ميتا"),
+        ("google.html", "Google Ads", "google", "إعلانات جوجل"),
     ]
     links = []
-    for href, label, tab in tabs:
+    for href, label, tab, label_ar in tabs:
         cls = "active" if tab == active_tab else ""
-        links.append(f'<a href="{href}" class="{cls}">{label}</a>')
+        links.append(f'<a href="{href}" class="{cls}" data-en="{label}" data-ar="{label_ar}">{label}</a>')
     return f"""
 <nav class="navbar">
   <div class="nav-brand">
     {logo_html}
-    <span class="nav-title">White Car Ads Audit</span>
+    <span class="nav-title" data-en="White Car Ads Audit" data-ar="تدقيق إعلانات وايت كار">White Car Ads Audit</span>
   </div>
-  <div class="nav-tabs">
-    {"".join(links)}
+  <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+    <div class="nav-tabs">
+      {"".join(links)}
+    </div>
+    <button class="lang-toggle" id="langToggle" data-en="العربية" data-ar="English">العربية</button>
   </div>
 </nav>
 """
@@ -1056,6 +1149,7 @@ def common_head(title, active_tab):
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    html[dir="rtl"] body { direction: rtl; text-align: right; }
     body {
       margin: 0;
       font-family: var(--font-body);
@@ -1179,6 +1273,19 @@ def common_head(title, active_tab):
       background: var(--accent-light);
       box-shadow: 0 2px 8px rgba(94,234,212,0.25);
     }
+    .lang-toggle {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+    .lang-toggle:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.5); }
     .hero {
       position: relative;
       min-height: 42vh;
@@ -1231,6 +1338,18 @@ def common_head(title, active_tab):
       animation: fadeInUp 1s var(--transition) 0.15s forwards;
       opacity: 0;
     }
+    html[dir="rtl"] .navbar,
+    html[dir="rtl"] .nav-brand,
+    html[dir="rtl"] .nav-tabs { direction: rtl; }
+    html[dir="rtl"] .section-title { padding-left: 0; padding-right: 4rem; }
+    html[dir="rtl"] .section-title::before { left: auto; right: 0; }
+    html[dir="rtl"] .section-title::after { left: auto; right: 2.6rem; }
+    html[dir="rtl"] .pull-quote { padding-left: 0; padding-right: 1.5rem; border-left: none; border-right: 5px solid var(--accent); }
+    html[dir="rtl"] .recommendation { border-left: none; border-right: 5px solid var(--accent); }
+    html[dir="rtl"] .exec-summary { border-left: none; border-right: 5px solid var(--accent); }
+    html[dir="rtl"] table th,
+    html[dir="rtl"] table td { text-align: right; }
+    html[dir="rtl"] .platform-card .metric-row { direction: rtl; }
     .hero h1 .platform-icon {
       width: 64px;
       height: 64px;
@@ -1575,13 +1694,68 @@ def common_head(title, active_tab):
     .recommendation:hover { transform: translateX(6px); box-shadow: var(--shadow-hover); }
     .recommendation h4 { margin: 0 0 0.35rem; font-size: 1.05rem; font-weight: 800; color: var(--ink); }
     .recommendation p { margin: 0; font-size: 0.94rem; color: var(--ink-light); }
+    @media (max-width: 900px) {
+      .hero h1 { font-size: clamp(2rem, 6vw, 3.5rem); }
+      .hero { padding: 4rem 1.5rem 3.5rem; }
+      .section-title { font-size: 1.7rem; }
+      .chart-wrap { height: 300px; }
+    }
     @media (max-width: 640px) {
-      .navbar { padding: 0.75rem 1rem; }
+      .navbar { padding: 0.75rem 1rem; flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      .nav-brand { justify-content: center; font-size: 1rem; }
+      .nav-logo { height: 34px; }
       .nav-title { display: none; }
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-      .hero { padding: 3rem 1rem; min-height: auto; }
-      .section-title { padding-left: 3rem; font-size: 1.6rem; }
-      .section-title::after { left: 2rem; }
+      .nav-tabs { justify-content: center; }
+      .nav-tabs a { padding: 0.45rem 0.85rem; font-size: 0.78rem; }
+      .lang-toggle { margin-left: auto; }
+      .hero { padding: 2.5rem 1rem 3rem; min-height: auto; max-height: none; }
+      .hero h1 { font-size: clamp(1.8rem, 8vw, 2.6rem); }
+      html[dir="rtl"] .navbar,
+    html[dir="rtl"] .nav-brand,
+    html[dir="rtl"] .nav-tabs { direction: rtl; }
+    html[dir="rtl"] .section-title { padding-left: 0; padding-right: 4rem; }
+    html[dir="rtl"] .section-title::before { left: auto; right: 0; }
+    html[dir="rtl"] .section-title::after { left: auto; right: 2.6rem; }
+    html[dir="rtl"] .pull-quote { padding-left: 0; padding-right: 1.5rem; border-left: none; border-right: 5px solid var(--accent); }
+    html[dir="rtl"] .recommendation { border-left: none; border-right: 5px solid var(--accent); }
+    html[dir="rtl"] .exec-summary { border-left: none; border-right: 5px solid var(--accent); }
+    html[dir="rtl"] table th,
+    html[dir="rtl"] table td { text-align: right; }
+    html[dir="rtl"] .platform-card .metric-row { direction: rtl; }
+    .hero h1 .platform-icon { width: 42px; height: 42px; }
+      .hero p { font-size: 1rem; max-width: 100%; }
+      .scroll-hint { display: none; }
+      .container { padding: 1.5rem 1rem 3rem; }
+      .kpis { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .kpi { padding: 1rem; }
+      .kpi-value { font-size: 1.35rem; }
+      .kpi-label { font-size: 0.65rem; }
+      .filters { flex-direction: column; gap: 0.75rem; padding: 1rem; }
+      .filters label { min-width: auto; width: 100%; }
+      .filters button { width: 100%; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 1rem; }
+      .platform-grid { grid-template-columns: 1fr; }
+      .card { padding: 1.1rem; overflow-x: auto; }
+      .card h2 { font-size: 1.1rem; }
+      .section-title { padding-left: 2.5rem; font-size: 1.5rem; margin: 2.5rem 0 1rem; }
+      .section-title::before { font-size: 0.65rem; }
+      .section-title::after { left: 1.6rem; }
+      html[dir="rtl"] .section-title { padding-left: 0; padding-right: 2.5rem; }
+      html[dir="rtl"] .section-title::before { left: auto; right: 0; }
+      html[dir="rtl"] .section-title::after { left: auto; right: 1.6rem; }
+      .pull-quote { font-size: 1.15rem; padding-left: 1.1rem; }
+      html[dir="rtl"] .pull-quote { padding-left: 0; padding-right: 1.1rem; border-left: none; border-right: 5px solid var(--accent); }
+      .metadata-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .chart-wrap { height: 260px; }
+      .chart-wrap.small { height: 200px; }
+      .funnel-step { flex: 1 1 100px; padding: 0.75rem; }
+      .funnel-step:not(:last-child)::after { right: -0.7rem; font-size: 0.8rem; }
+      html[dir="rtl"] .funnel-step:not(:last-child)::after { right: auto; left: -0.7rem; }
+      .heatmap { overflow-x: auto; }
+      table { font-size: 0.78rem; }
+      th, td { padding: 0.55rem 0.45rem; }
+      .recommendation { padding: 1rem; }
+      .platform-card { padding: 1.1rem; }
     }
     .metadata-bar { padding: 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
     .metadata-grid {
@@ -1716,24 +1890,24 @@ def common_head(title, active_tab):
 def render_filters(platform):
     return f"""
 <div class="filters">
-  <label>Start Date
+  <label data-en="Start Date" data-ar="تاريخ البدء">Start Date
     <input type="date" id="startDate" data-platform="{platform}">
   </label>
-  <label>End Date
+  <label data-en="End Date" data-ar="تاريخ الانتهاء">End Date
     <input type="date" id="endDate" data-platform="{platform}">
   </label>
-  <label>Campaign Status
+  <label data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status
     <select id="statusFilter" data-platform="{platform}">
-      <option value="all">All</option>
-      <option value="active">Active / Enabled</option>
-      <option value="inactive">Paused / Disabled</option>
+      <option value="all" data-en="All" data-ar="الكل">All</option>
+      <option value="active" data-en="Active / Enabled" data-ar="نشط / مفعّل">Active / Enabled</option>
+      <option value="inactive" data-en="Paused / Disabled" data-ar="متوقف / معطل">Paused / Disabled</option>
     </select>
   </label>
-  <label>Min Spend (SAR)
+  <label data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)
     <input type="number" id="minSpend" placeholder="0" data-platform="{platform}">
   </label>
-  <button onclick="applyFilters('{platform}')">Apply Filters</button>
-  <button onclick="resetFilters('{platform}')" style="background:#475569">Reset</button>
+  <button onclick="applyFilters('{platform}')" data-en="Apply Filters" data-ar="تطبيق الفلاتر">Apply Filters</button>
+  <button onclick="resetFilters('{platform}')" style="background:#475569" data-en="Reset" data-ar="إعادة تعيين">Reset</button>
 </div>
 """
 
@@ -1930,7 +2104,7 @@ def overview_page(tiktok, meta, google, logo_b64):
 {nav}
 <div class="hero">
   <h1>White Car Cross-Platform Ads Audit</h1>
-  <p>Executive overview of TikTok, Meta, and Google Ads performance</p>
+  <p data-en="Executive overview of TikTok, Meta, and Google Ads performance" data-ar="نظرة عامة على أداء إعلانات تيك توك وميتا وجوجل">Executive overview of TikTok, Meta, and Google Ads performance</p>
   <div class="scroll-hint">↓ Scroll to explore</div>
 </div>
 <div class="container">
@@ -1984,7 +2158,7 @@ def overview_page(tiktok, meta, google, logo_b64):
     {table_google}
   </div>
 </div>
-<div class="footer">Generated on {generated}</div>
+<div class="footer" data-en="Generated on {generated}" data-ar="تم الإنشاء في {generated}">Generated on {generated}</div>
 """.format(
         nav=render_nav('overview', logo_b64),
         metadata=report_metadata(),
@@ -2105,7 +2279,7 @@ def tiktok_page(data, logo_b64):
 {nav}
 <div class="hero">
   <h1>{icon} TikTok Ads Deep Dive</h1>
-  <p>Advertiser: {name} (ID {id}) · Objective: Lead Generation</p>
+  <p><span data-en="Advertiser:" data-ar="المعلن:">Advertiser:</span> {name} (ID {id}) · <span data-en="Objective:" data-ar="الهدف:">Objective:</span> <span data-en="Lead Generation" data-ar="جلب العملاء المحتملين">Lead Generation</span></p>
   <div class="scroll-hint">↓ Scroll to explore</div>
 </div>
 <div class="container">
@@ -2151,7 +2325,7 @@ def tiktok_page(data, logo_b64):
     {worst_cpa}
   </div>
 </div>
-<div class="footer">Generated on {generated}</div>
+<div class="footer" data-en="Generated on {generated}" data-ar="تم الإنشاء في {generated}">Generated on {generated}</div>
 <script>
 const ttDailyLabels = {js_daily_labels};
 const ttDailySpend = {js_daily_spend};
@@ -2256,7 +2430,7 @@ def meta_page(data, logo_b64):
 {nav}
 <div class="hero">
   <h1>{icon} Meta Ads Deep Dive</h1>
-  <p>Account: {name} (ID {id}) · Objective: Lead Generation / Conversations</p>
+  <p><span data-en="Account:" data-ar="الحساب:">Account:</span> {name} (ID {id}) · <span data-en="Objective:" data-ar="الهدف:">Objective:</span> <span data-en="Lead Generation / Conversations" data-ar="جلب العملاء / المحادثات">Lead Generation / Conversations</span></p>
   <div class="scroll-hint">↓ Scroll to explore</div>
 </div>
 <div class="container">
@@ -2304,7 +2478,7 @@ def meta_page(data, logo_b64):
 
   {table_worst_cpa}
 </div>
-<div class="footer">Generated on {generated}</div>
+<div class="footer" data-en="Generated on {generated}" data-ar="تم الإنشاء في {generated}">Generated on {generated}</div>
 <script>
 const metaLabels = {js_labels};
 const metaSpend = {js_spend};
@@ -2398,7 +2572,7 @@ def google_page(data, logo_b64):
 {nav}
 <div class="hero">
   <h1>{icon} Google Ads Deep Dive</h1>
-  <p>Account: {name} ({id}) · High-intent search & Performance Max</p>
+  <p><span data-en="Account:" data-ar="الحساب:">Account:</span> {name} ({id}) · <span data-en="High-intent search & Performance Max" data-ar="بحث عالي النية و Performance Max">High-intent search & Performance Max</span></p>
   <div class="scroll-hint">↓ Scroll to explore</div>
 </div>
 <div class="container">
@@ -2443,7 +2617,7 @@ def google_page(data, logo_b64):
 
   {table_best_cpa}
 </div>
-<div class="footer">Generated on {generated}</div>
+<div class="footer" data-en="Generated on {generated}" data-ar="تم الإنشاء في {generated}">Generated on {generated}</div>
 <script>
 const googleLabels = {js_labels};
 const googleSpend = {js_spend};
@@ -2601,6 +2775,92 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.5 });
   document.querySelectorAll('.kpi-value').forEach(el => counterObserver.observe(el));
 });
+</script>
+
+<script>
+(function() {
+  const DICT = {
+    "Overview": "نظرة عامة", "TikTok": "تيك توك", "Meta": "ميتا", "Google Ads": "إعلانات جوجل",
+    "White Car Ads Audit": "تدقيق إعلانات وايت كار",
+    "Start Date": "تاريخ البدء", "End Date": "تاريخ الانتهاء", "Campaign Status": "حالة الحملة",
+    "Min Spend (SAR)": "الحد الأدنى للإنفاق (ر.س)", "Apply Filters": "تطبيق الفلاتر", "Reset": "إعادة تعيين",
+    "All": "الكل", "Active / Enabled": "نشط / مفعّل", "Paused / Disabled": "متوقف / معطل",
+    "Active": "نشط", "Paused": "متوقف", "Unknown": "غير معروف",
+    "Total Spend": "إجمالي الإنفاق", "Total Conversions": "إجمالي التحويلات", "Blended CPA": "متوسط تكلفة التحويل", "Platforms": "المنصات",
+    "Spend": "الإنفاق", "Conversions": "التحويلات", "Impressions": "الظهور", "Clicks": "النقرات",
+    "CTR": "معدل النقر", "CPC": "تكلفة النقرة", "CPA": "تكلفة التحويل", "Reach": "الوصول",
+    "Conv. Value": "قيمة التحويل", "ROAS": "العائد على الإنفاق", "Campaigns": "الحملات",
+    "Lifetime Spend": "إجمالي الإنفاق", "Video VTR": "معدل مشاهدة الفيديو", "Completion": "الاكتمال", "Conv. Rate": "معدل التحويل",
+    "Campaign": "الحملة", "Status": "الحالة", "Objective": "الهدف", "Impr.": "الظهور", "Conv.": "التحويل",
+    "Spend Share": "حصة الإنفاق", "Conversions by Platform": "التحويلات حسب المنصة", "Conversions by Campaign": "التحويلات حسب الحملة",
+    "CPA by Platform": "تكلفة التحويل حسب المنصة", "Spend vs Conversions": "الإنفاق مقابل التحويلات",
+    "Spend by Campaign": "الإنفاق حسب الحملة", "Monthly Trend": "الاتجاه الشهري", "Device Breakdown": "التفصيل حسب الجهاز",
+    "Day-of-Week CPA Heatmap": "خريطة حرارية لتكلفة التحويل حسب اليوم", "Age & Gender": "العمر والجنس", "Region": "المنطقة",
+    "Hourly Performance": "الأداء حسب الساعة", "Top Campaigns": "أهم الحملات", "Top Spend Campaigns by Platform": "أعلى الحملات إنفاقًا حسب المنصة",
+    "Campaign Classification": "تصنيف الحملات", "Scale Winners": "الرابحون القابلون للتوسع", "Expensive Volume": "حجم مكلف", "Poor Signal": "إشارة ضعيفة",
+    "Platform Mix & Efficiency": "مزيج المنصات والكفاءة", "Platform Mix & Dependency Risk": "مزيج المنصات ومخاطر الاعتماد",
+    "Lead Quality & CRM Funnel": "جودة العملاء المحتملين وقمع CRM", "Data Quality Issues": "مشكلات جودة البيانات",
+    "Strategic Recommendations": "التوصيات الاستراتيجية", "14-Day Action Roadmap": "خطة العمل لمدة 14 يومًا",
+    "Tracking & Measurement Gaps": "فجوات التتبع والقياس", "Executive Summary": "الملخص التنفيذي",
+    "TikTok Ads Deep Dive": "تحليل عميق لإعلانات تيك توك", "Meta Ads Deep Dive": "تحليل عميق لإعلانات ميتا", "Google Ads Deep Dive": "تحليل عميق لإعلانات جوجل",
+    "Performance Deep Dive": "تحليل الأداء العميق", "Creative Performance": "أداء الإبداع", "Timing & Efficiency": "التوقيت والكفاءة", "Audience Performance": "أداء الجمهور",
+    "Anomalies & Red Flags": "الحالات الشاذة والعلامات الحمراء",
+    "No campaign data available.": "لا توجد بيانات حملات متاحة.", "No data available.": "لا توجد بيانات متاحة.",
+    "Reporting period": "فترة الإبلاغ", "Data source": "مصدر البيانات", "Attribution": "النسبة", "Conversion definition": "تعريف التحويل",
+    "Platform default attribution windows": "نوافذ النسبة الافتراضية للمنصة",
+    "TikTok: Lead Generation form submits · Meta: Lead / messaging / form actions · Google: Form/call conversions": "تيك توك: إرسالات نموذج جلب العملاء · ميتا: عملاء / رسائل / إجراءات النموذج · جوجل: تحويلات النموذج/المكالمات",
+    "Key insight from the audit": "رؤية رئيسية من التدقيق",
+    "Advertiser:": "المعلن:", "Account:": "الحساب:", "Objective:": "الهدف:",
+    "Lead Generation": "جلب العملاء المحتملين", "Lead Generation / Conversations": "جلب العملاء / المحادثات",
+    "High-intent search & Performance Max": "بحث عالي النية و Performance Max",
+    "Google": "جوجل", "TikTok": "تيك توك", "Meta": "ميتا",
+    "Scale / volume driver": "محرك النطاق والحجم", "Audience test / retarget": "اختبار الجمهور / إعادة الاستهداف", "High-intent capture": "التقاط النية العالية",
+    "View TikTok deep dive →": "عرض تحليل تيك توك العميق →", "View Meta deep dive →": "عرض تحليل ميتا العميق →", "View Google deep dive →": "عرض تحليل جوجل العميق →",
+    "Generated on": "تم الإنشاء في"
+  };
+  const REVERSE = Object.fromEntries(Object.entries(DICT).map(([k, v]) => [v, k]));
+
+  function translateTree(lang) {
+    const map = lang === 'ar' ? DICT : REVERSE;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!node.parentElement) continue;
+      if (node.parentElement.hasAttribute('data-en') || node.parentElement.closest('[data-en]')) continue;
+      const tag = node.parentElement.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      nodes.push(node);
+    }
+    nodes.forEach(node => {
+      let text = node.textContent;
+      Object.keys(map).forEach(key => {
+        text = text.split(key).join(map[key]);
+      });
+      node.textContent = text;
+    });
+  }
+
+  const langToggle = document.getElementById('langToggle');
+  function setLang(lang) {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    localStorage.setItem('wc-lang', lang);
+    document.querySelectorAll('[data-en][data-ar]').forEach(el => {
+      el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.en;
+    });
+    translateTree(lang);
+    if (langToggle) langToggle.textContent = lang === 'ar' ? langToggle.dataset.ar : langToggle.dataset.en;
+  }
+  if (langToggle) {
+    langToggle.addEventListener('click', () => {
+      const newLang = document.documentElement.lang === 'ar' ? 'en' : 'ar';
+      setLang(newLang);
+    });
+  }
+  const savedLang = localStorage.getItem('wc-lang') || 'en';
+  if (savedLang === 'ar') setLang('ar');
+})();
 </script>
 """
 
