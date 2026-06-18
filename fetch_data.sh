@@ -186,27 +186,6 @@ curl -s -X POST "https://tiktok-ads.mcp.pipeboard.co/?token=$TOKEN" \
   -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":23,\"params\":{\"name\":\"get_tiktok_insights\",\"arguments\":{\"advertiser_id\":\"$TIKTOK_ADVERTISER\",\"report_type\":\"BASIC\",\"data_level\":\"AUCTION_ADVERTISER\",\"dimensions\":[\"stat_time_hour\"],\"metrics\":[\"spend\",\"impressions\",\"clicks\",\"conversion\",\"cost_per_conversion\"],\"start_date\":\"$YESTERDAY\",\"end_date\":\"$YESTERDAY\"}}}" \
   > "$RAW_DIR/tiktok_insights_hourly.json"
 
-echo "Fetching Google Ads age range GAQL data..."
-curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":27,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT segments.age_range, ad_group.id, ad_group.name, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM ad_group WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
-  > "$RAW_DIR/google_ads_age.json"
-
-echo "Fetching Google Ads gender GAQL data..."
-curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":28,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT segments.gender, ad_group.id, ad_group.name, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM ad_group WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
-  > "$RAW_DIR/google_ads_gender.json"
-
-echo "Fetching Google Ads location GAQL data..."
-curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":29,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT geographic_view.country_criterion_id, geographic_view.location_type, segments.geo_target_constant, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM geographic_view WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
-  > "$RAW_DIR/google_ads_location.json"
-
 echo "Fetching Google Ads hour-of-day GAQL data..."
 curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
   -H "Content-Type: application/json" \
