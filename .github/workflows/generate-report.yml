@@ -1,0 +1,45 @@
+name: Generate Ads Audit Report
+
+on:
+  schedule:
+    # Run daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch fresh data from Pipeboard MCP
+        env:
+          PIPEBOARD_API_TOKEN: ${{ secrets.PIPEBOARD_API_TOKEN }}
+        run: bash fetch_data.sh
+
+      - name: Generate HTML report
+        run: python3 generate_html_report.py
+
+      - name: Generate Markdown report
+        run: python3 generate_report.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add raw/ index.html audit_report.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update ads audit report [$(date -u +%Y-%m-%d)]"
+            git push
+          fi

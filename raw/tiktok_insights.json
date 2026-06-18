@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","id":7,"result":{"isError":true,"content":[{"type":"text","text":"Failed to execute get_tiktok_insights: data_level is required"}]}}
