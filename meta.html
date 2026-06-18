@@ -348,6 +348,46 @@
     }
     .recommendation h4 { margin: 0 0 0.25rem; font-size: 1rem; }
     .recommendation p { margin: 0; font-size: 0.92rem; color: #475569; }
+    .metadata-bar { padding: 1rem 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem 1.25rem;
+    }
+    .metadata-grid div { display: flex; flex-direction: column; gap: 0.2rem; }
+    .metadata-grid span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 700; }
+    .metadata-grid strong { font-size: 0.85rem; color: var(--wc-slate); }
+    .exec-summary { background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 4px solid var(--wc-accent); }
+    .exec-summary .lead { font-size: 1.05rem; color: var(--wc-black); margin-bottom: 0.75rem; }
+    .exec-summary p { margin: 0; color: #475569; font-size: 0.95rem; }
+    .funnel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .funnel-step {
+      flex: 1 1 120px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+      position: relative;
+    }
+    .funnel-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .funnel-step strong { display: block; font-size: 0.85rem; color: var(--wc-black); margin-bottom: 0.2rem; }
+    .funnel-step span { font-size: 0.75rem; color: #64748b; }
+    .sub-heading { font-size: 0.95rem; margin: 1.25rem 0 0.5rem; color: var(--wc-black); font-weight: 700; }
+    .muted { color: #64748b; font-size: 0.92rem; }
     @media (max-width: 640px) {
       .navbar { padding: 0.75rem 1rem; }
       .nav-title { display: none; }
@@ -371,8 +411,8 @@
 </nav>
 
 <div class="hero">
-  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.1 4.388 23.095 10.125 24v-8.437H7.078v-3.49h3.047V9.297c0-3.017 1.792-4.688 4.533-4.688 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.875v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.095 24 18.1 24 12.073z"/></svg> Meta Ads</h1>
-  <p>Account: 255 (ID act_908730431603058)</p>
+  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.1 4.388 23.095 10.125 24v-8.437H7.078v-3.49h3.047V9.297c0-3.017 1.792-4.688 4.533-4.688 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.875v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.095 24 18.1 24 12.073z"/></svg> Meta Ads Deep Dive</h1>
+  <p>Account: 255 (ID act_908730431603058) · Objective: Lead Generation / Conversations</p>
 </div>
 <div class="container">
   
@@ -404,8 +444,10 @@
     <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value">7,930</div></div>
     <div class="kpi sub"><div class="kpi-label">Reach</div><div class="kpi-value">266,739</div></div>
     <div class="kpi sub"><div class="kpi-label">CPA</div><div class="kpi-value">SAR 5.35</div></div>
-    <div class="kpi sub"><div class="kpi-label">Campaigns</div><div class="kpi-value">13 (0 active)</div></div>
+    <div class="kpi sub"><div class="kpi-label">Campaigns</div><div class="kpi-value">13 active 0 / ad sets active 7</div></div>
   </div>
+
+  <div class="recommendation"><h4>Status inconsistency detected</h4><p>All 13 Meta campaigns are paused, but 7 ad set(s) remain active. Campaign-level budget/status is off while ad sets may still deliver. Clean up campaign/ad set status before relaunching.</p></div>
 
   <div class="card"><h2>Campaigns</h2><div style="overflow-x:auto"><table class="data-table" id="metaCampaignsTable">
     <tr>
@@ -643,6 +685,11 @@
     <div class="card"><h2>Conversions by Campaign</h2><div class="chart-wrap"><canvas id="metaConvChart"></canvas></div></div>
   </div>
 
+  <div class="grid-2">
+    <div class="card"><h2>CPA by Campaign</h2><div class="chart-wrap"><canvas id="metaCpaChart"></canvas></div></div>
+    <div class="card"><h2>Campaign Objectives</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Objective</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>UNKNOWN</td><td>SAR 3,648.56</td><td>593</td><td>SAR 6.15</td></tr><tr><td>OUTCOME_LEADS</td><td>SAR 4,344.46</td><td>790</td><td>SAR 5.50</td></tr><tr><td>OUTCOME_ENGAGEMENT</td><td>SAR 1,101.40</td><td>316</td><td>SAR 3.49</td></tr></tbody></table></div></div>
+  </div>
+
   <h2 class="section-title">Audience Performance</h2>
   <div class="grid-3">
     <div class="card"><h2>Age Groups</h2><div class="no-data">No data available.</div></div>
@@ -658,11 +705,11 @@
   </div>
 
   <h2 class="section-title">Targeting Snapshot</h2>
-  <div class="card"><h2>Ad Sets</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Set</th><th>Campaign</th><th>Status</th><th>Budget</th><th>Age</th><th>Countries</th><th>Interests</th></tr></thead><tbody><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202471799</td><td><span class="status paused">Paused</span></td><td>SAR 0.00</td><td>18-65</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202455230</td><td><span class="status paused">Paused</span></td><td>SAR 0.00</td><td>18-65</td><td>SA</td><td>Vehicles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202449759</td><td><span class="status active">Active</span></td><td>SAR 0.00</td><td>18-65</td><td>SA</td><td>Vehicles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202449591</td><td><span class="status active">Active</span></td><td>SAR 120.00</td><td>18-65</td><td>SA</td><td>Vehicles, Automobiles, Motor vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202441936</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202441779</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202433284</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Vehicles, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202432879</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-60</td><td>SA</td><td>Vehicles, Financial services, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف التفاعل</td><td>1202412686</td><td><span class="status paused">Paused</span></td><td>SAR 500.00</td><td>18-65</td><td>SA</td><td>Financial services, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202409205</td><td><span class="status paused">Paused</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Finance, Vehicles, Automobiles, Toyota Camry, Hyundai</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202408586</td><td><span class="status paused">Paused</span></td><td>SAR 200.00</td><td>18-65</td><td>SA</td><td>Finance, Vehicles, Automobiles, Hyundai Elantra, Hyundai</td></tr><tr><td>مجموعة إعلانية جديدة بهدف التفاعل</td><td>1202408205</td><td><span class="status active">Active</span></td><td>SAR 100.00</td><td>18-65</td><td>SA</td><td>Finance, Vehicles, Kia Motors, Financial services, Automobiles</td></tr></tbody></table></div></div>
+  <div class="card"><h2>Ad Sets</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Set</th><th>Campaign</th><th>Status</th><th>Budget</th><th>Age</th><th>Optimization</th><th>Countries</th><th>Interests</th></tr></thead><tbody><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202471799</td><td><span class="status paused">Paused</span></td><td>SAR 0.00</td><td>18-65</td><td></td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202455230</td><td><span class="status paused">Paused</span></td><td>SAR 0.00</td><td>18-65</td><td></td><td>SA</td><td>Vehicles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202449759</td><td><span class="status active">Active</span></td><td>SAR 0.00</td><td>18-65</td><td></td><td>SA</td><td>Vehicles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202449591</td><td><span class="status active">Active</span></td><td>SAR 120.00</td><td>18-65</td><td></td><td>SA</td><td>Vehicles, Automobiles, Motor vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202441936</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>LOWEST_COST_WITHOUT_CAP</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202441779</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>LOWEST_COST_WITHOUT_CAP</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202433284</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>LOWEST_COST_WITHOUT_CAP</td><td>SA</td><td>Vehicles, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202432879</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-60</td><td>LOWEST_COST_WITHOUT_CAP</td><td>SA</td><td>Vehicles, Financial services, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف التفاعل</td><td>1202412686</td><td><span class="status paused">Paused</span></td><td>SAR 500.00</td><td>18-65</td><td></td><td>SA</td><td>Financial services, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202409205</td><td><span class="status paused">Paused</span></td><td>SAR 300.00</td><td>18-65</td><td>LOWEST_COST_WITHOUT_CAP</td><td>SA</td><td>Finance, Vehicles, Automobiles, Toyota Camry, Hyundai</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202408586</td><td><span class="status paused">Paused</span></td><td>SAR 200.00</td><td>18-65</td><td>LOWEST_COST_WITHOUT_CAP</td><td>SA</td><td>Finance, Vehicles, Automobiles, Hyundai Elantra, Hyundai</td></tr><tr><td>مجموعة إعلانية جديدة بهدف التفاعل</td><td>1202408205</td><td><span class="status active">Active</span></td><td>SAR 100.00</td><td>18-65</td><td></td><td>SA</td><td>Finance, Vehicles, Kia Motors, Financial services, Automobiles</td></tr></tbody></table></div></div>
 
   <div class="card"><h2>Worst CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 92.63</td><td>2</td><td>SAR 46.31</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 233.70</td><td>8</td><td>SAR 29.21</td></tr><tr><td>‏حملة إعلانية جديدة بهدف العملاء المحتمل</td><td>SAR 755.27</td><td>38</td><td>SAR 19.88</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 69.52</td><td>4</td><td>SAR 17.38</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 812.69</td><td>67</td><td>SAR 12.13</td></tr></tbody></table></div></div>
 </div>
-<div class="footer">Generated on 2026-06-18 14:44</div>
+<div class="footer">Generated on 2026-06-18 15:19</div>
 <script>
 const metaLabels = ["2", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u200f\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644", "\u0645\u0627\u0647\u0631", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u062a\u0641\u0627\u0639", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u062a\u0641\u0627\u0639", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627"];
 const metaSpend = [2692.95, 1116.82, 812.69, 755.27, 721.91, 565.44, 535.96, 447.02, 442.24, 304.96, 269.84, 233.7, 92.63, 69.52, 33.47];

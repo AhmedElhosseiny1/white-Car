@@ -275,6 +275,7 @@ def analyze_tiktok():
         "dow_rows": dow_rows, "top_weekdays": top_weekdays, "top_months": top_months,
         "video_funnel": {"plays": total_video_plays, "p25": total_p25, "p50": total_p50, "p75": total_p75, "p100": total_p100},
         "hourly_rows": hourly_rows,
+        "cpa": safe_div(total_spend, total_conversions, 0),
     }
 
 
@@ -330,6 +331,8 @@ def analyze_meta():
 
     active_campaigns = [c for c in campaigns if c.get("status") == "ACTIVE"]
     paused_campaigns = [c for c in campaigns if c.get("status") != "ACTIVE"]
+    active_adsets = [a for a in adsets if a.get("status") == "ACTIVE"]
+    paused_adsets = [a for a in adsets if a.get("status") != "ACTIVE"]
 
     adset_rows = []
     for ag in adsets:
@@ -448,13 +451,14 @@ def analyze_meta():
     return {
         "account": account, "total_campaigns": len(campaigns),
         "active_campaigns": len(active_campaigns), "paused_campaigns": paused_campaigns,
-        "total_adsets": len(adsets), "total_spend": total_spend,
+        "total_adsets": len(adsets), "active_adsets": len(active_adsets), "paused_adsets": len(paused_adsets), "total_spend": total_spend,
         "total_impressions": total_impressions, "total_clicks": total_clicks,
         "total_conversions": total_conversions, "total_reach": total_reach,
         "top_campaigns": top_campaigns, "best_cpa_campaigns": best_cpa, "worst_cpa_campaigns": worst_cpa,
         "adset_rows": adset_rows,
         "age_rows": age_rows, "gender_rows": gender_rows, "region_rows": region_rows,
         "hourly_rows": hourly_rows, "dow_rows": dow_rows, "top_weekdays": top_weekdays,
+        "cpa": safe_div(total_spend, total_conversions, 0),
     }
 
 
@@ -633,6 +637,7 @@ def analyze_google_ads():
         "top_adgroups": top_adgroups, "top_months": top_months,
         "device_rows": device_rows, "dow_rows": dow_rows, "top_weekdays": top_weekdays,
         "hourly_rows": hourly_rows, "heatmap_totals": heatmap_totals,
+        "cpa": safe_div(total_spend, total_conversions, 0),
     }
 
 
@@ -660,6 +665,263 @@ new Chart(document.getElementById('cpaByPlatformChart'), {{type:'bar', data:{{la
 new Chart(document.getElementById('spendVsConvChart'), {{type:'bar', data:{{labels:platformLabels, datasets:[{{label:'Spend', data:platformSpend, backgroundColor:palette.slice(0, platformLabels.length), borderRadius:8, yAxisID:'y'}}, {{label:'Conversions', data:platformConv, backgroundColor:palette.slice(0, platformLabels.length).map(c=>c+'80'), borderRadius:8, yAxisID:'y1'}}]}}, options:{{responsive:true, maintainAspectRatio:false, scales:{{y:{{beginAtZero:true, title:{{display:true, text:'Spend (SAR)'}}}}, y1:{{beginAtZero:true, position:'right', title:{{display:true, text:'Conversions'}}}}, x:{{}}}}, plugins:{{legend:{{position:'top'}}}}}}}});
 </script>
 </body></html>"""
+
+
+
+def report_metadata():
+    return """
+<div class="card metadata-bar">
+  <div class="metadata-grid">
+    <div><span>Reporting period</span><strong>TikTok: 18 Jun 2025 – 18 Jun 2026 · Meta: 28 Jan – 18 Jun 2026 · Google: full period</strong></div>
+    <div><span>Data source</span><strong>TikTok Ads MCP, Meta Ads MCP, Google Ads MCP via Pipeboard</strong></div>
+    <div><span>Attribution</span><strong>Platform default attribution windows</strong></div>
+    <div><span>Conversion definition</span><strong>TikTok: Lead Generation form submits · Meta: Lead / messaging / form actions · Google: Form/call conversions</strong></div>
+  </div>
+</div>
+"""
+
+
+def platform_comparison_table(tiktok, meta, google):
+    rows = [
+        ["TikTok", fmt_sar(tiktok['total_spend']), f"{tiktok['spend_share']:.1f}%", fmt_num(tiktok['total_conversions']), f"{tiktok['conv_share']:.1f}%", fmt_sar(tiktok['cpa']), "Scale / volume driver"],
+    ]
+    if meta:
+        rows.append(["Meta", fmt_sar(meta['total_spend']), f"{meta['spend_share']:.1f}%", fmt_num(meta['total_conversions']), f"{meta['conv_share']:.1f}%", fmt_sar(meta['cpa']), "Audience test / retarget"])
+    if google:
+        rows.append(["Google", fmt_sar(google['total_spend']), f"{google['spend_share']:.1f}%", fmt_num(google['total_conversions']), f"{google['conv_share']:.1f}%", fmt_sar(google['cpa']), "High-intent capture"])
+    return render_simple_table(
+        'Platform Mix & Dependency Risk',
+        ['Platform', 'Spend', 'Spend Share', 'Conversions', 'Conv. Share', 'CPA', 'Strategic Role'],
+        rows
+    )
+
+
+def executive_summary(tiktok, meta, google):
+    total_spend = tiktok["total_spend"] + (meta["total_spend"] if meta else 0) + (google["total_spend"] if google else 0)
+    total_conv = tiktok["total_conversions"] + (meta["total_conversions"] if meta else 0) + (google["total_conversions"] if google else 0)
+    blended_cpa = safe_div(total_spend, total_conv, 0)
+    tiktok_share = tiktok["total_spend"] / total_spend * 100 if total_spend else 0
+    tiktok_conv_share = tiktok["total_conversions"] / total_conv * 100 if total_conv else 0
+
+    if tiktok_share > 80:
+        risk = "heavy platform dependency"
+        risk_detail = "TikTok is carrying most of the spend and conversions. This drives scale but creates concentration risk."
+    elif tiktok_share > 50:
+        risk = "TikTok-led mix"
+        risk_detail = "TikTok dominates volume; Meta and Google are underfunded relative to their CPA potential."
+    else:
+        risk = "balanced mix"
+        risk_detail = "Spend is distributed across platforms, though volumes differ significantly."
+
+    best_cpa_platform = "Google"
+    best_cpa_value = google["cpa"] if google else 999999
+    if meta and meta["cpa"] < best_cpa_value and meta["cpa"] > 0:
+        best_cpa_platform = "Meta"
+        best_cpa_value = meta["cpa"]
+    if tiktok["cpa"] < best_cpa_value and tiktok["cpa"] > 0:
+        best_cpa_platform = "TikTok"
+        best_cpa_value = tiktok["cpa"]
+
+    return f"""
+<div class="card exec-summary">
+  <h2>Executive Summary</h2>
+  <p class="lead">
+    White Car generated <strong>{fmt_num(total_conv)} total platform conversions</strong> at a blended CPA of <strong>{fmt_sar(blended_cpa)}</strong>,
+    with TikTok driving the majority of scale. TikTok represents around <strong>{tiktok_share:.0f}% of spend</strong> and
+    <strong>{tiktok_conv_share:.0f}% of conversions</strong>. {risk_detail}
+  </p>
+  <p>
+    The most efficient platform by reported CPA is <strong>{best_cpa_platform} ({fmt_sar(best_cpa_value)})</strong>,
+    but its spend volume is much smaller, so performance should be validated by lead quality before major budget shifts.
+    The next priority is to validate lead quality, connect ad conversions to CRM outcomes, and restructure campaign naming, tracking, and budget allocation.
+  </p>
+</div>
+"""
+
+
+def data_quality_issues(tiktok, meta, google):
+    issues = []
+    # Check for unknown names in TikTok top campaigns
+    unknown_camps = [c for c in tiktok.get('top_campaigns', []) if c.get('name') in ('UNKNOWN', '', None) or 'unknown' in str(c.get('name', '')).lower()]
+    if unknown_camps:
+        issues.append(["TikTok campaigns showing UNKNOWN or missing names", "Cannot understand strategy, audience, or offer", "Verify campaign name mapping from TikTok campaigns API"])
+    # Meta status inconsistency
+    if meta and meta.get('active_campaigns') == 0 and meta.get('total_adsets', 0) > 0:
+        issues.append(["Meta summary shows 0 active campaigns while active ad sets exist", "Inconsistent status logic creates confusion", "Separate campaign-level status from ad set-level status in reporting"])
+    # Google heatmap empty
+    if google and not google.get('heatmap_totals'):
+        issues.append(["Google hourly heatmap unavailable", "Cannot identify best time/day performance", "Fetch segments by day_of_week and hour from Google Ads"])
+    # High CPA campaigns
+    high_cpa = [c for c in tiktok.get('top_campaigns', []) if c.get('conversions', 0) > 0 and c.get('cpconv', 0) > 10]
+    if high_cpa:
+        issues.append([f"{len(high_cpa)} TikTok campaigns above SAR 10 CPA", "Wasted spend if lead quality is not superior", "Review and reduce budget or restructure"])
+    # Google ROAS context
+    if google and google.get('total_conversion_value', 0) > 0 and google.get('total_spend', 0) > 0:
+        issues.append(["Google ROAS shown without clear revenue source validation", "ROAS may be misleading without CRM confirmation", "Add conversion value source and revenue validation"])
+
+    if not issues:
+        issues.append(["No major data quality flags detected", "", "Continue monitoring"])
+    return render_simple_table('Data Quality Issues & Fixes', ['Issue', 'Impact', 'Fix'], issues)
+
+
+def lead_quality_funnel():
+    return """
+<div class="card">
+  <h2>Platform CPA vs Real CPA</h2>
+  <p class="muted">
+    Platform CPA is based on ad-reported conversions. For a car business, the real metric should be
+    <strong>cost per qualified lead</strong> and <strong>cost per sale</strong>. Below is the recommended lead lifecycle to track.
+  </p>
+  <div class="funnel">
+    <div class="funnel-step"><strong>New Lead</strong><span>Form / call / WhatsApp</span></div>
+    <div class="funnel-step"><strong>Valid Lead</strong><span>Real contact, correct city</span></div>
+    <div class="funnel-step"><strong>Qualified Lead</strong><span>Has need, has car/budget</span></div>
+    <div class="funnel-step"><strong>Sales Accepted</strong><span>Contacted & accepted</span></div>
+    <div class="funnel-step"><strong>Appointment</strong><span>Showroom / test drive</span></div>
+    <div class="funnel-step"><strong>Closed Deal</strong><span>Revenue</span></div>
+  </div>
+  <p class="muted" style="margin-top:1rem">
+    Example: TikTok may show SAR 7.35 CPA, but if only 10% of leads are qualified, the real qualified-lead cost is ~SAR 73.50.
+    Google may show SAR 4.38 CPA, but if intent is stronger, it may be far more valuable despite lower spend.
+  </p>
+</div>
+"""
+
+
+def campaign_classification(campaign_rows, platform_name):
+    if not campaign_rows:
+        return '<div class="no-data">No campaign data available.</div>'
+
+    winners = []
+    testers = []
+    expensive = []
+    poor = []
+
+    # Use account average CPA as benchmark
+    total_spend = sum(c.get('spend', 0) for c in campaign_rows)
+    total_conv = sum(c.get('conversions', 0) for c in campaign_rows)
+    avg_cpa = safe_div(total_spend, total_conv, 0)
+
+    for c in campaign_rows:
+        spend = c.get('spend', 0)
+        conv = c.get('conversions', 0)
+        cpa = c.get('cpconv', 0) if 'cpconv' in c else c.get('cpa', 0)
+        if conv > 0:
+            if cpa <= avg_cpa * 0.8 and spend >= avg_cpa * 5:
+                winners.append([c.get('name', c.get('campaign_id', '')), fmt_sar(spend), fmt_num(conv), fmt_sar(cpa), "Scale"])
+            elif cpa <= avg_cpa * 0.9 and spend < avg_cpa * 5:
+                testers.append([c.get('name', c.get('campaign_id', '')), fmt_sar(spend), fmt_num(conv), fmt_sar(cpa), "Test more budget"])
+            elif cpa >= avg_cpa * 1.3 and spend >= avg_cpa * 5:
+                expensive.append([c.get('name', c.get('campaign_id', '')), fmt_sar(spend), fmt_num(conv), fmt_sar(cpa), "Reduce / Restructure"])
+            elif cpa >= avg_cpa * 1.2:
+                poor.append([c.get('name', c.get('campaign_id', '')), fmt_sar(spend), fmt_num(conv), fmt_sar(cpa), "Watch / Pause"])
+        else:
+            if spend > avg_cpa * 2:
+                poor.append([c.get('name', c.get('campaign_id', '')), fmt_sar(spend), fmt_num(conv), "—", "Pause / Relaunch"])
+
+    html = f'<div class="card"><h2>{platform_name} Campaign Classification</h2>'
+    def render_sub_table(rows):
+        if not rows:
+            return ''
+        ths = "".join(f"<th>{h}</th>" for h in ['Campaign', 'Spend', 'Conv.', 'CPA', 'Action'])
+        body = ""
+        for row in rows:
+            body += "<tr>" + "".join(f"<td>{c}</td>" for c in row) + "</tr>"
+        return f'<div style="overflow-x:auto"><table class="data-table"><thead><tr>{ths}</tr></thead><tbody>{body}</tbody></table></div>'
+    if winners:
+        html += '<h3 class="sub-heading">🏆 Scale Winners</h3>' + render_sub_table(winners)
+    if testers:
+        html += '<h3 class="sub-heading">🧪 Efficient Testers</h3>' + render_sub_table(testers)
+    if expensive:
+        html += '<h3 class="sub-heading">⚠️ Expensive Volume</h3>' + render_sub_table(expensive)
+    if poor:
+        html += '<h3 class="sub-heading">🛑 Poor Signal</h3>' + render_sub_table(poor)
+    if not any([winners, testers, expensive, poor]):
+        html += '<div class="no-data">Not enough conversion data to classify campaigns.</div>'
+    html += '</div>'
+    return html
+
+
+def budget_reallocation_plan(tiktok, meta, google):
+    rows = [
+        ["TikTok", "Main volume driver", "Heavy dependency, mixed campaign quality", "Keep scale but reduce waste from high CPA campaigns"],
+    ]
+    if meta:
+        rows.append(["Meta", "Efficient but paused/underused", "Low spend and unclear campaign status", "Relaunch best lead campaigns with cleaner structure"])
+    if google:
+        rows.append(["Google", "High-intent capture", "Very low spend, limited data", "Increase gradually after search-term & lead-quality review"])
+    return render_simple_table('Suggested Budget Direction', ['Platform', 'Current Role', 'Issue', 'Next Action'], rows)
+
+
+def action_plan_14_days():
+    return render_simple_table(
+        '14-Day Optimization Roadmap',
+        ['Timeline', 'Action', 'Owner'],
+        [
+            ["Day 1–2", "Fix campaign naming and data mapping; confirm active vs paused status", "Media Team"],
+            ["Day 3–4", "Validate lead quality from CRM/sales; map platform leads to lifecycle stages", "Sales + Analytics"],
+            ["Day 5–7", "Pause or reduce budget for campaigns above blended CPA without quality proof", "Media Team"],
+            ["Week 2", "Relaunch Meta winners and increase Google high-intent budget in controlled test", "Media Team"],
+            ["Week 2", "Add creative testing plan by hook, car model, offer, and audience", "Creative Team"],
+            ["Day 14", "Review qualified CPA, not just platform CPA; report cost per qualified lead", "Analytics"],
+        ]
+    )
+
+
+def tracking_gaps():
+    return render_simple_table(
+        'Tracking & Measurement Gaps',
+        ['Gap', 'Why It Matters', 'Fix'],
+        [
+            ["Platform conversions are not enough", "Cannot know real lead quality", "Connect leads to CRM/sales sheet"],
+            ["No visible UTM framework", "Cannot compare campaigns in GA4/CRM", "Standardize UTMs across all ads"],
+            ["No lead status tracking", "Cannot calculate qualified CPA", "Add lifecycle stages"],
+            ["No sales outcome tracking", "Cannot know real ROI", "Track booked / visited / sold"],
+            ["No deduplication logic", "Same lead may be counted multiple times", "Deduplicate by phone number / email"],
+        ]
+    )
+
+
+def anomalies_red_flags(tiktok, meta, google):
+    flags = []
+    total_spend = tiktok["total_spend"] + (meta["total_spend"] if meta else 0) + (google["total_spend"] if google else 0)
+    tiktok_share = tiktok["total_spend"] / total_spend * 100 if total_spend else 0
+    if tiktok_share > 80:
+        flags.append(["Platform concentration risk", f"TikTok accounts for {tiktok_share:.0f}% of spend; one policy or performance issue could sharply cut lead volume."])
+    # campaigns with CPA 0 and no conversions but spend
+    zero_conv_spend = [c for c in tiktok.get('top_campaigns', []) if c.get('conversions', 0) == 0 and c.get('spend', 0) > 0]
+    if zero_conv_spend:
+        total_waste = sum(c.get('spend', 0) for c in zero_conv_spend)
+        flags.append(["Spend with zero conversions", f"{len(zero_conv_spend)} TikTok campaign(s) spent {fmt_sar(total_waste)} without conversions."])
+    # very low CPA campaigns - possible data quality issue
+    low_cpa = [c for c in tiktok.get('top_campaigns', []) if c.get('conversions', 0) > 0 and c.get('cpconv', 0) < 1]
+    if low_cpa:
+        flags.append(["Suspiciously low CPA", f"{len(low_cpa)} TikTok campaign(s) report CPA below SAR 1. Validate conversion definition and deduplication."])
+    if meta and meta.get('active_campaigns', 0) == 0 and meta.get('total_adsets', 0) > 0:
+        flags.append(["Meta status inconsistency", "0 active campaigns but active ad sets exist. Review campaign vs ad set status."])
+    if google and google.get('total_conversion_value', 0) > 0:
+        roas = safe_div(google['total_conversion_value'], google['total_spend'], 0)
+        if roas < 1:
+            flags.append(["Google ROAS below 1x", f"Reported ROAS is {roas:.2f}x. Confirm conversion value accuracy and lead quality before scaling."])
+    if not flags:
+        flags.append(["No major red flags", "Continue monitoring performance and lead quality."])
+    return render_simple_table('Anomalies & Red Flags', ['Flag', 'Detail'], flags)
+
+
+def strategic_recommendations(tiktok, meta, google):
+    recs = [
+        ("1. Do not judge performance by CPA alone", "TikTok drives the majority of leads, but the business must validate which platform produces qualified leads and sales opportunities."),
+        ("2. Reduce TikTok waste before scaling", "Campaigns above the blended CPA should be reviewed, especially high-spend campaigns with CPA above SAR 9–13."),
+        ("3. Relaunch Meta with a cleaner structure", "Meta shows strong CPA potential, but the current setup appears paused or inconsistent. Relaunch with separated audiences, clear naming, and creative testing."),
+        ("4. Give Google a controlled scale test", "Google has the lowest CPA, but spend is very small. Increase gradually only after reviewing search terms and lead quality."),
+        ("5. Add CRM outcome tracking", "The report should show not only leads, but qualified leads, sales calls, appointments, visits, and closed deals."),
+        ("6. Build a creative testing system", "TikTok and Meta need weekly creative testing by hook, car model, offer, and audience segment."),
+    ]
+    html = '<div class="card"><h2>Strategic Recommendations</h2>'
+    for title, body in recs:
+        html += f'<div class="recommendation"><h4>{title}</h4><p>{body}</p></div>'
+    html += '</div>'
+    return html
 
 
 def render_nav(active_tab, logo_b64):
@@ -1038,6 +1300,46 @@ def common_head(title, active_tab):
     }}
     .recommendation h4 {{ margin: 0 0 0.25rem; font-size: 1rem; }}
     .recommendation p {{ margin: 0; font-size: 0.92rem; color: #475569; }}
+    .metadata-bar {{ padding: 1rem 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0; }}
+    .metadata-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem 1.25rem;
+    }}
+    .metadata-grid div {{ display: flex; flex-direction: column; gap: 0.2rem; }}
+    .metadata-grid span {{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 700; }}
+    .metadata-grid strong {{ font-size: 0.85rem; color: var(--wc-slate); }}
+    .exec-summary {{ background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 4px solid var(--wc-accent); }}
+    .exec-summary .lead {{ font-size: 1.05rem; color: var(--wc-black); margin-bottom: 0.75rem; }}
+    .exec-summary p {{ margin: 0; color: #475569; font-size: 0.95rem; }}
+    .funnel {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }}
+    .funnel-step {{
+      flex: 1 1 120px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+      position: relative;
+    }}
+    .funnel-step:not(:last-child)::after {{
+      content: "→";
+      position: absolute;
+      right: -0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-weight: 700;
+    }}
+    .funnel-step strong {{ display: block; font-size: 0.85rem; color: var(--wc-black); margin-bottom: 0.2rem; }}
+    .funnel-step span {{ font-size: 0.75rem; color: #64748b; }}
+    .sub-heading {{ font-size: 0.95rem; margin: 1.25rem 0 0.5rem; color: var(--wc-black); font-weight: 700; }}
+    .muted {{ color: #64748b; font-size: 0.92rem; }}
     @media (max-width: 640px) {{
       .navbar {{ padding: 0.75rem 1rem; }}
       .nav-title {{ display: none; }}
@@ -1209,17 +1511,17 @@ def overview_page(tiktok, meta, google, logo_b64):
     platform_labels = ["TikTok"]
     platform_spend = [round(tiktok["total_spend"], 2)]
     platform_conv = [tiktok["total_conversions"]]
-    platform_cpa = [round(safe_div(tiktok["total_spend"], tiktok["total_conversions"], 0), 2)]
+    platform_cpa = [round(tiktok["cpa"], 2)]
     if meta:
         platform_labels.append("Meta")
         platform_spend.append(round(meta["total_spend"], 2))
         platform_conv.append(meta["total_conversions"])
-        platform_cpa.append(round(safe_div(meta["total_spend"], meta["total_conversions"], 0), 2))
+        platform_cpa.append(round(meta["cpa"], 2))
     if google:
         platform_labels.append("Google")
         platform_spend.append(round(google["total_spend"], 2))
         platform_conv.append(google["total_conversions"])
-        platform_cpa.append(round(safe_div(google["total_spend"], google["total_conversions"], 0), 2))
+        platform_cpa.append(round(google["cpa"], 2))
 
     cards = []
     cards.append("""
@@ -1227,13 +1529,13 @@ def overview_page(tiktok, meta, google, logo_b64):
       <h3>{tiktok_icon} TikTok</h3>
       <div class="metric-row"><span>Spend</span><span>{tiktok_spend}</span></div>
       <div class="metric-row"><span>Conversions</span><span>{tiktok_conv}</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>{tiktok_camps}</span></div>
       <div class="metric-row"><span>CPA</span><span>{tiktok_cpa}</span></div>
-      <a href="tiktok.html">View TikTok report &rarr;</a>
+      <div class="metric-row"><span>Share</span><span>{tiktok_share:.1f}% spend · {tiktok_conv_share:.1f}% conv</span></div>
+      <a href="tiktok.html">View TikTok deep dive &rarr;</a>
     </div>""".format(
         tiktok_icon=platform_icon('tiktok'), tiktok_spend=fmt_sar(tiktok['total_spend']),
-        tiktok_conv=fmt_num(tiktok['total_conversions']), tiktok_camps=f"{tiktok['total_campaigns']} ({tiktok['active_campaigns']} active)",
-        tiktok_cpa=fmt_sar(safe_div(tiktok['total_spend'], tiktok['total_conversions'], 0))
+        tiktok_conv=fmt_num(tiktok['total_conversions']), tiktok_cpa=fmt_sar(tiktok['cpa']),
+        tiktok_share=tiktok['spend_share'], tiktok_conv_share=tiktok['conv_share']
     ))
     if meta:
         cards.append("""
@@ -1241,13 +1543,13 @@ def overview_page(tiktok, meta, google, logo_b64):
       <h3>{meta_icon} Meta Ads</h3>
       <div class="metric-row"><span>Spend</span><span>{meta_spend}</span></div>
       <div class="metric-row"><span>Conversions</span><span>{meta_conv}</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>{meta_camps}</span></div>
       <div class="metric-row"><span>CPA</span><span>{meta_cpa}</span></div>
-      <a href="meta.html">View Meta report &rarr;</a>
+      <div class="metric-row"><span>Share</span><span>{meta_share:.1f}% spend · {meta_conv_share:.1f}% conv</span></div>
+      <a href="meta.html">View Meta deep dive &rarr;</a>
     </div>""".format(
             meta_icon=platform_icon('meta'), meta_spend=fmt_sar(meta['total_spend']),
-            meta_conv=fmt_num(meta['total_conversions']), meta_camps=f"{meta['total_campaigns']} ({meta['active_campaigns']} active)",
-            meta_cpa=fmt_sar(safe_div(meta['total_spend'], meta['total_conversions'], 0))
+            meta_conv=fmt_num(meta['total_conversions']), meta_cpa=fmt_sar(meta['cpa']),
+            meta_share=meta['spend_share'], meta_conv_share=meta['conv_share']
         ))
     if google:
         cards.append("""
@@ -1255,38 +1557,24 @@ def overview_page(tiktok, meta, google, logo_b64):
       <h3>{google_icon} Google Ads</h3>
       <div class="metric-row"><span>Spend</span><span>{google_spend}</span></div>
       <div class="metric-row"><span>Conversions</span><span>{google_conv}</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>{google_camps}</span></div>
       <div class="metric-row"><span>CPA</span><span>{google_cpa}</span></div>
-      <a href="google.html">View Google report &rarr;</a>
+      <div class="metric-row"><span>Share</span><span>{google_share:.1f}% spend · {google_conv_share:.1f}% conv</span></div>
+      <a href="google.html">View Google deep dive &rarr;</a>
     </div>""".format(
             google_icon=platform_icon('google'), google_spend=fmt_sar(google['total_spend']),
-            google_conv=fmt_num(google['total_conversions']), google_camps=f"{google['total_campaigns']} ({google['active_campaigns']} active)",
-            google_cpa=fmt_sar(safe_div(google['total_spend'], google['total_conversions'], 0))
+            google_conv=fmt_num(google['total_conversions']), google_cpa=fmt_sar(google['cpa']),
+            google_share=google['spend_share'], google_conv_share=google['conv_share']
         ))
-
-    recommendations = []
-    if tiktok["total_conversions"] > 0 and tiktok["total_spend"] / tiktok["total_conversions"] > 100:
-        recommendations.append(("TikTok CPA is above SAR 100", "Review low-converting ad groups and pause underperformers to improve efficiency."))
-    if google and google["total_conversions"] > 0 and google["total_conversion_value"] / google["total_spend"] < 2:
-        recommendations.append(("Google ROAS below 2x", "Expand high-converting keywords/ad groups and review search terms report for waste."))
-    if meta and meta["active_campaigns"] == 0:
-        recommendations.append(("Meta campaigns are paused", "Restart top-performing lead campaigns or reallocate budget to TikTok/Google."))
-    if tiktok["top_campaigns"] and tiktok["top_campaigns"][0]["spend"] > tiktok["total_spend"] * 0.6:
-        recommendations.append(("TikTok spend concentrated", f"'{tiktok['top_campaigns'][0]['name']}' accounts for >60% of spend; diversify creative testing."))
-
-    recs_html = ""
-    for title, body in recommendations:
-        recs_html += f'<div class="recommendation"><h4>{title}</h4><p>{body}</p></div>'
-    if not recs_html:
-        recs_html = '<div class="no-data">No automated recommendations at this time.</div>'
 
     body = """
 {nav}
 <div class="hero">
   <h1>White Car Cross-Platform Ads Audit</h1>
-  <p>Unified overview of TikTok, Meta, and Google Ads performance</p>
+  <p>Executive overview of TikTok, Meta, and Google Ads performance</p>
 </div>
 <div class="container">
+  {metadata}
+
   <div class="kpis">
     {kpi_total_spend}
     {kpi_total_conv}
@@ -1294,16 +1582,35 @@ def overview_page(tiktok, meta, google, logo_b64):
     {kpi_platforms}
   </div>
 
-  <h2 class="section-title">CPA Comparison by Platform</h2>
+  {exec_summary}
+
+  <h2 class="section-title">Platform Mix & Efficiency</h2>
   <div class="grid-2">
     {chart_cpa}
     {chart_spend_conv}
   </div>
 
-  <h2 class="section-title">Platform Breakdown</h2>
   <div class="platform-grid">
     {cards}
   </div>
+
+  {platform_table}
+
+  <div class="grid-2">
+    {data_quality}
+    {lead_quality}
+  </div>
+
+  <div class="grid-2">
+    {anomalies}
+    {budget_plan}
+  </div>
+
+  {strategic_recs}
+
+  {action_plan}
+
+  {tracking_gaps}
 
   <h2 class="section-title">Top Spend Campaigns by Platform</h2>
   <div class="grid-3">
@@ -1311,24 +1618,30 @@ def overview_page(tiktok, meta, google, logo_b64):
     {table_meta}
     {table_google}
   </div>
-
-  <h2 class="section-title">Recommendations</h2>
-  {recs}
 </div>
 <div class="footer">Generated on {generated}</div>
 """.format(
         nav=render_nav('overview', logo_b64),
+        metadata=report_metadata(),
         kpi_total_spend=kpi_card('Total Spend', fmt_sar(total_spend)),
         kpi_total_conv=kpi_card('Total Conversions', fmt_num(total_conversions)),
         kpi_blended_cpa=kpi_card('Blended CPA', fmt_sar(overall_cpa)),
         kpi_platforms=kpi_card('Platforms', sum([1, bool(meta), bool(google)])),
+        exec_summary=executive_summary(tiktok, meta, google),
         chart_cpa=render_chart_card('CPA by Platform', 'cpaByPlatformChart'),
         chart_spend_conv=render_chart_card('Spend vs Conversions', 'spendVsConvChart'),
         cards="".join(cards),
+        platform_table=platform_comparison_table(tiktok, meta, google),
+        data_quality=data_quality_issues(tiktok, meta, google),
+        lead_quality=lead_quality_funnel(),
+        anomalies=anomalies_red_flags(tiktok, meta, google),
+        budget_plan=budget_reallocation_plan(tiktok, meta, google),
+        strategic_recs=strategic_recommendations(tiktok, meta, google),
+        action_plan=action_plan_14_days(),
+        tracking_gaps=tracking_gaps(),
         table_tiktok=render_simple_table('TikTok Top Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpconv'] if c['conversions'] else 0)] for c in tiktok['top_campaigns'][:5]]),
         table_meta=render_simple_table('Meta Top Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in (meta['top_campaigns'][:5] if meta else [])]) if meta else '',
         table_google=render_simple_table('Google Top Campaigns', ['Campaign', 'Spend', 'Conv.', 'ROAS'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), f"{c['roas']:.2f}x"] for c in (google['top_campaigns'][:5] if google else [])]) if google else '',
-        recs=recs_html,
         generated=datetime.now().strftime('%Y-%m-%d %H:%M')
     )
 
@@ -1406,11 +1719,26 @@ def tiktok_page(data, logo_b64):
         [[r['day'], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), fmt_pct(r['ctr'], True)] for r in data['top_weekdays']]
     )
 
+    # Creative performance snapshot
+    creative_rows = []
+    for ad in data.get('top_ads', [])[:10]:
+        creative_rows.append([
+            ad['name'][:36],
+            ad.get('campaign_name', '')[:24],
+            fmt_sar(ad['spend']),
+            fmt_num(ad['conversions']),
+            fmt_sar(ad['cpconv'] if ad['conversions'] else 0),
+            fmt_pct(ad['ctr'], True),
+            fmt_pct(ad['conv_rate']),
+            "Scale" if ad['conversions'] > 0 and ad['cpconv'] < data['cpa'] * 0.8 else ("Test" if ad['conversions'] > 0 and ad['cpconv'] < data['cpa'] else "Review")
+        ])
+    creative_table = render_simple_table('Creative Performance Snapshot', ['Ad', 'Campaign', 'Spend', 'Conv.', 'CPA', 'CTR', 'CVR', 'Action'], creative_rows)
+
     body = """
 {nav}
 <div class="hero">
-  <h1>{icon} TikTok Ads</h1>
-  <p>Advertiser: {name} (ID {id})</p>
+  <h1>{icon} TikTok Ads Deep Dive</h1>
+  <p>Advertiser: {name} (ID {id}) · Objective: Lead Generation</p>
 </div>
 <div class="container">
   {filters}
@@ -1424,12 +1752,17 @@ def tiktok_page(data, logo_b64):
     {kpi_camps}
   </div>
 
+  {campaign_classification}
+
   {campaigns_table}
 
   <div class="grid-2">
     {chart_daily_spend}
     {chart_daily_conv}
   </div>
+
+  <h2 class="section-title">Creative Performance</h2>
+  {creative_table}
 
   <h2 class="section-title">Timing & Efficiency</h2>
   <div class="grid-3">
@@ -1443,11 +1776,6 @@ def tiktok_page(data, logo_b64):
     {chart_monthly}
     {chart_funnel}
     {top_adgroups}
-  </div>
-
-  <div class="grid-2">
-    {top_ads}
-    {best_ads_ctr}
   </div>
 
   <div class="grid-2">
@@ -1489,8 +1817,9 @@ new Chart(document.getElementById('ttFunnelChart'), {{type:'bar', data:{{labels:
         kpi_impr=kpi_card('Impressions', fmt_num(data['total_impressions'])),
         kpi_clicks=kpi_card('Clicks', fmt_num(data['total_clicks'])),
         kpi_ctr=kpi_card('CTR', fmt_pct(safe_div(data['total_clicks'], data['total_impressions']), True), sub=True),
-        kpi_cpa=kpi_card('CPA', fmt_sar(safe_div(data['total_spend'], data['total_conversions'], 0)), sub=True),
+        kpi_cpa=kpi_card('CPA', fmt_sar(data['cpa']), sub=True),
         kpi_camps=kpi_card('Campaigns', f"{data['total_campaigns']} ({data['active_campaigns']} active)", sub=True),
+        campaign_classification=campaign_classification(data['top_campaigns'], 'TikTok'),
         campaigns_table=render_tiktok_campaigns_table(data['top_campaigns']),
         chart_daily_spend=render_chart_card('Daily Spend', 'ttDailySpendChart'),
         chart_daily_conv=render_chart_card('Daily Conversions', 'ttDailyConvChart'),
@@ -1500,8 +1829,7 @@ new Chart(document.getElementById('ttFunnelChart'), {{type:'bar', data:{{labels:
         chart_monthly=render_chart_card('Monthly Spend', 'ttMonthlyChart', small=True),
         chart_funnel=render_chart_card('Video Funnel', 'ttFunnelChart', small=True),
         top_adgroups=render_simple_table('Top Ad Groups', ['Ad Group', 'Campaign', 'Spend', 'CPA', 'Completion'], [[ag['name'][:38], ag['campaign_name'][:30], fmt_sar(ag['spend']), fmt_sar(ag['cpconv'] if ag['conversions'] else 0), fmt_pct(ag['completion_rate'])] for ag in data['top_adgroups'][:10]]),
-        top_ads=render_simple_table('Top Ads', ['Ad', 'Campaign', 'Spend', 'CPA', 'CTR'], [[ad['name'][:38], ad['campaign_name'][:30], fmt_sar(ad['spend']), fmt_sar(ad['cpconv'] if ad['conversions'] else 0), fmt_pct(ad['ctr'], True)] for ad in data['top_ads'][:10]]),
-        best_ads_ctr=render_simple_table('Best CTR Ads', ['Ad', 'Campaign', 'Impr.', 'CTR'], [[ad['name'][:38], ad['campaign_name'][:30], fmt_num(ad['impressions']), fmt_pct(ad['ctr'], True)] for ad in data['best_ads_by_ctr']]),
+        creative_table=creative_table,
         best_cpa=render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpconv'])] for c in data['best_cpa_campaigns']]),
         worst_cpa=render_simple_table('Worst CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpconv'])] for c in data['worst_cpa_campaigns']]),
         generated=datetime.now().strftime('%Y-%m-%d %H:%M'),
@@ -1537,11 +1865,30 @@ def meta_page(data, logo_b64):
         [[r['day'], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), fmt_pct(r['ctr'])] for r in data.get('top_weekdays', [])]
     ) if data.get('top_weekdays') else ''
 
+    status_note = ''
+    if data.get('active_campaigns', 0) == 0 and data.get('active_adsets', 0) > 0:
+        status_note = ('<div class="recommendation"><h4>Status inconsistency detected</h4><p>All '
+                       + str(data['total_campaigns']) + ' Meta campaigns are paused, but '
+                       + str(data['active_adsets']) + ' ad set(s) remain active. Campaign-level budget/status is off while ad sets may still deliver. Clean up campaign/ad set status before relaunching.</p></div>')
+
+    objective_rows = {}
+    for c in data.get('top_campaigns', []):
+        obj = c.get('objective', 'Unknown')
+        if obj not in objective_rows:
+            objective_rows[obj] = {"spend": 0, "conversions": 0}
+        objective_rows[obj]["spend"] += c.get("spend", 0)
+        objective_rows[obj]["conversions"] += c.get("conversions", 0)
+    objective_table = render_simple_table(
+        'Campaign Objectives',
+        ['Objective', 'Spend', 'Leads', 'CPA'],
+        [[obj, fmt_sar(v["spend"]), fmt_num(v["conversions"]), fmt_sar(safe_div(v["spend"], v["conversions"], 0))] for obj, v in objective_rows.items()]
+    )
+
     body = """
 {nav}
 <div class="hero">
-  <h1>{icon} Meta Ads</h1>
-  <p>Account: {name} (ID {id})</p>
+  <h1>{icon} Meta Ads Deep Dive</h1>
+  <p>Account: {name} (ID {id}) · Objective: Lead Generation / Conversations</p>
 </div>
 <div class="container">
   {filters}
@@ -1555,11 +1902,18 @@ def meta_page(data, logo_b64):
     {kpi_camps}
   </div>
 
+  {status_note}
+
   {campaigns_table}
 
   <div class="grid-2">
     {chart_spend}
     {chart_conv}
+  </div>
+
+  <div class="grid-2">
+    {chart_cpa}
+    {objective_table}
   </div>
 
   <h2 class="section-title">Audience Performance</h2>
@@ -1607,18 +1961,21 @@ new Chart(document.getElementById('metaHourlyChart'), {{type:'line', data:{{labe
         kpi_impr=kpi_card('Impressions', fmt_num(data['total_impressions'])),
         kpi_clicks=kpi_card('Clicks', fmt_num(data['total_clicks'])),
         kpi_reach=kpi_card('Reach', fmt_num(data['total_reach']), sub=True),
-        kpi_cpa=kpi_card('CPA', fmt_sar(safe_div(data['total_spend'], data['total_conversions'], 0)), sub=True),
-        kpi_camps=kpi_card('Campaigns', f"{data['total_campaigns']} ({data['active_campaigns']} active)", sub=True),
+        kpi_cpa=kpi_card('CPA', fmt_sar(data['cpa']), sub=True),
+        kpi_camps=kpi_card('Campaigns', f"{data['total_campaigns']} active {data['active_campaigns']} / ad sets active {data['active_adsets']}", sub=True),
+        status_note=status_note,
         campaigns_table=render_meta_campaigns_table(data['top_campaigns']),
         chart_spend=render_chart_card('Spend by Campaign', 'metaSpendChart'),
         chart_conv=render_chart_card('Conversions by Campaign', 'metaConvChart'),
+        chart_cpa=render_chart_card('CPA by Campaign', 'metaCpaChart'),
+        objective_table=objective_table,
         table_age=render_simple_table('Age Groups', ['Age', 'Spend', 'Leads', 'CPA', 'CTR'], [[r['key'], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), fmt_pct(r['ctr'])] for r in data['age_rows']]),
         table_gender=render_simple_table('Gender', ['Gender', 'Spend', 'Leads', 'CPA', 'CTR'], [[r['key'], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), fmt_pct(r['ctr'])] for r in data['gender_rows']]),
         table_region=render_simple_table('Top Regions', ['Region', 'Spend', 'Leads', 'CPA', 'CTR'], [[r['key'], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), fmt_pct(r['ctr'])] for r in data['region_rows'][:10]]),
         top_weekdays=top_weekdays_html,
         chart_hourly=render_chart_card('Hourly Performance (Last 7d)', 'metaHourlyChart', small=True),
         table_best_cpa=render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['best_cpa_campaigns']]),
-        adset_table=render_simple_table('Ad Sets', ['Ad Set', 'Campaign', 'Status', 'Budget', 'Age', 'Countries', 'Interests'], [[ag['name'][:36], ag['campaign_id'][:10], render_status(ag['status']), fmt_sar(ag['budget']), f"{ag['age_min']}-{ag['age_max']}", ag['countries'], ag['interests']] for ag in data['adset_rows'][:15]]),
+        adset_table=render_simple_table('Ad Sets', ['Ad Set', 'Campaign', 'Status', 'Budget', 'Age', 'Optimization', 'Countries', 'Interests'], [[ag['name'][:36], ag['campaign_id'][:10], render_status(ag['status']), fmt_sar(ag['budget']), f"{ag['age_min']}-{ag['age_max']}", ag['bid_strategy'], ag['countries'], ag['interests']] for ag in data['adset_rows'][:15]]),
         table_worst_cpa=render_simple_table('Worst CPA Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['worst_cpa_campaigns']]),
         generated=datetime.now().strftime('%Y-%m-%d %H:%M'),
         js_labels=json.dumps(labels),
@@ -1648,11 +2005,31 @@ def google_page(data, logo_b64):
         [[r['day'], fmt_sar(r['spend']), fmt_num(r['conversions']), f"{r['roas']:.2f}x", fmt_sar(r['cpa'])] for r in data['top_weekdays']]
     )
 
+    campaign_type_rows = {}
+    for c in data.get('top_campaigns', []):
+        ctype = c.get('type', 'Unknown')
+        if ctype not in campaign_type_rows:
+            campaign_type_rows[ctype] = {"spend": 0, "conversions": 0, "value": 0}
+        campaign_type_rows[ctype]["spend"] += c.get("spend", 0)
+        campaign_type_rows[ctype]["conversions"] += c.get("conversions", 0)
+        campaign_type_rows[ctype]["value"] += c.get("conversions_value", 0)
+    type_table = render_simple_table(
+        'Campaign Types',
+        ['Type', 'Spend', 'Conv.', 'CPA', 'ROAS'],
+        [[ctype, fmt_sar(v["spend"]), fmt_num(v["conversions"]), fmt_sar(safe_div(v["spend"], v["conversions"], 0)), f"{safe_div(v['value'], v['spend'], 0):.2f}x"] for ctype, v in campaign_type_rows.items()]
+    )
+
+    search_terms_note = ('<div class="card"><h2>Search Terms & Keyword Analysis</h2>'
+                         '<p class="muted">Search-term and keyword-level data is not currently pulled from Google Ads. '
+                         'To complete this audit, fetch search_term_view and keyword_view with metrics.clicks, '
+                         'metrics.conversions, metrics.cost_micros, and metrics.conversions_value. This will reveal '
+                         'high-intent terms to scale and waste terms to negate.</p></div>')
+
     body = """
 {nav}
 <div class="hero">
-  <h1>{icon} Google Ads</h1>
-  <p>Account: {name} ({id})</p>
+  <h1>{icon} Google Ads Deep Dive</h1>
+  <p>Account: {name} ({id}) · High-intent search & Performance Max</p>
 </div>
 <div class="container">
   {filters}
@@ -1673,6 +2050,11 @@ def google_page(data, logo_b64):
     {chart_conv}
   </div>
 
+  <div class="grid-2">
+    {chart_cpa}
+    {type_table}
+  </div>
+
   <h2 class="section-title">Timing & Efficiency</h2>
   <div class="grid-3">
     {heatmap}
@@ -1686,6 +2068,8 @@ def google_page(data, logo_b64):
     {table_dow}
     {table_adgroups}
   </div>
+
+  {search_terms}
 
   {table_best_cpa}
 </div>
@@ -1719,12 +2103,15 @@ new Chart(document.getElementById('googleMonthlyChart'), {{type:'line', data:{{l
         campaigns_table=render_google_campaigns_table(data['top_campaigns']),
         chart_spend=render_chart_card('Spend by Campaign', 'googleSpendChart'),
         chart_conv=render_chart_card('Conversions by Campaign', 'googleConvChart'),
+        chart_cpa=render_chart_card('CPA by Campaign', 'googleCpaChart'),
+        type_table=type_table,
         heatmap=heatmap_html,
         top_weekdays=top_weekdays_html,
         chart_monthly=render_chart_card('Monthly Spend', 'googleMonthlyChart', small=True),
         table_device=render_simple_table('Device Breakdown', ['Device', 'Spend', 'Conv.', 'ROAS'], [[d['device'].title(), fmt_sar(d['spend']), fmt_num(d['conversions']), f"{d['roas']:.2f}x"] for d in data['device_rows']]),
         table_dow=render_simple_table('Day of Week', ['Day', 'Spend', 'Conv.', 'ROAS'], [[d['day'], fmt_sar(d['spend']), fmt_num(d['conversions']), f"{d['roas']:.2f}x"] for d in data['dow_rows']]),
         table_adgroups=render_simple_table('Top Ad Groups', ['Ad Group', 'Campaign', 'Spend', 'Conv.', 'CPA', 'ROAS'], [[ag['name'][:36], ag['campaign'][:30], fmt_sar(ag['spend']), fmt_num(ag['conversions']), fmt_sar(ag['cpa'] if ag['conversions'] else 0), f"{ag['roas']:.2f}x"] for ag in data['top_adgroups'][:15]]),
+        search_terms=search_terms_note,
         table_best_cpa=render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['best_cpa_campaigns']]),
         generated=datetime.now().strftime('%Y-%m-%d %H:%M'),
         js_labels=json.dumps(labels),
@@ -1781,6 +2168,17 @@ def main():
     tiktok = analyze_tiktok()
     meta = analyze_meta()
     google = analyze_google_ads()
+
+    total_spend = tiktok["total_spend"] + (meta["total_spend"] if meta else 0) + (google["total_spend"] if google else 0)
+    total_conv = tiktok["total_conversions"] + (meta["total_conversions"] if meta else 0) + (google["total_conversions"] if google else 0)
+    tiktok["spend_share"] = tiktok["total_spend"] / total_spend * 100 if total_spend else 0
+    tiktok["conv_share"] = tiktok["total_conversions"] / total_conv * 100 if total_conv else 0
+    if meta:
+        meta["spend_share"] = meta["total_spend"] / total_spend * 100 if total_spend else 0
+        meta["conv_share"] = meta["total_conversions"] / total_conv * 100 if total_conv else 0
+    if google:
+        google["spend_share"] = google["total_spend"] / total_spend * 100 if total_spend else 0
+        google["conv_share"] = google["total_conversions"] / total_conv * 100 if total_conv else 0
 
     pages = {
         "index.html": overview_page(tiktok, meta, google, logo_b64),

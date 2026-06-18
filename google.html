@@ -348,6 +348,46 @@
     }
     .recommendation h4 { margin: 0 0 0.25rem; font-size: 1rem; }
     .recommendation p { margin: 0; font-size: 0.92rem; color: #475569; }
+    .metadata-bar { padding: 1rem 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem 1.25rem;
+    }
+    .metadata-grid div { display: flex; flex-direction: column; gap: 0.2rem; }
+    .metadata-grid span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 700; }
+    .metadata-grid strong { font-size: 0.85rem; color: var(--wc-slate); }
+    .exec-summary { background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 4px solid var(--wc-accent); }
+    .exec-summary .lead { font-size: 1.05rem; color: var(--wc-black); margin-bottom: 0.75rem; }
+    .exec-summary p { margin: 0; color: #475569; font-size: 0.95rem; }
+    .funnel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .funnel-step {
+      flex: 1 1 120px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+      position: relative;
+    }
+    .funnel-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .funnel-step strong { display: block; font-size: 0.85rem; color: var(--wc-black); margin-bottom: 0.2rem; }
+    .funnel-step span { font-size: 0.75rem; color: #64748b; }
+    .sub-heading { font-size: 0.95rem; margin: 1.25rem 0 0.5rem; color: var(--wc-black); font-weight: 700; }
+    .muted { color: #64748b; font-size: 0.92rem; }
     @media (max-width: 640px) {
       .navbar { padding: 0.75rem 1rem; }
       .nav-title { display: none; }
@@ -371,8 +411,8 @@
 </nav>
 
 <div class="hero">
-  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google Ads</h1>
-  <p>Account: white car (3482883125)</p>
+  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google Ads Deep Dive</h1>
+  <p>Account: white car (3482883125) · High-intent search & Performance Max</p>
 </div>
 <div class="container">
   
@@ -444,6 +484,11 @@
     <div class="card"><h2>Conversions by Campaign</h2><div class="chart-wrap"><canvas id="googleConvChart"></canvas></div></div>
   </div>
 
+  <div class="grid-2">
+    <div class="card"><h2>CPA by Campaign</h2><div class="chart-wrap"><canvas id="googleCpaChart"></canvas></div></div>
+    <div class="card"><h2>Campaign Types</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Type</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>ROAS</th></tr></thead><tbody><tr><td>Unknown</td><td>SAR 3,233.56</td><td>738</td><td>SAR 4.38</td><td>0.23x</td></tr></tbody></table></div></div>
+  </div>
+
   <h2 class="section-title">Timing & Efficiency</h2>
   <div class="grid-3">
     <div class="card"><h2>CPA Heatmap by Day & Hour</h2><div class="no-data">No hourly breakdown available.</div></div>
@@ -458,9 +503,11 @@
     <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>ROAS</th></tr></thead><tbody><tr><td>المجموعة الإعلانية رقم 1</td><td>29-2</td><td>SAR 2,912.07</td><td>732</td><td>SAR 3.98</td><td>0.25x</td></tr><tr><td>المجموعة الإعلانية رقم 1</td><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td><td>0.02x</td></tr></tbody></table></div></div>
   </div>
 
+  <div class="card"><h2>Search Terms & Keyword Analysis</h2><p class="muted">Search-term and keyword-level data is not currently pulled from Google Ads. To complete this audit, fetch search_term_view and keyword_view with metrics.clicks, metrics.conversions, metrics.cost_micros, and metrics.conversions_value. This will reveal high-intent terms to scale and waste terms to negate.</p></div>
+
   <div class="card"><h2>Best CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>29-2</td><td>SAR 2,909.99</td><td>732</td><td>SAR 3.98</td></tr><tr><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td></tr></tbody></table></div></div>
 </div>
-<div class="footer">Generated on 2026-06-18 14:44</div>
+<div class="footer">Generated on 2026-06-18 15:19</div>
 <script>
 const googleLabels = ["29-2", "9-2"];
 const googleSpend = [2909.994921, 323.564754];

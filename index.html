@@ -348,6 +348,46 @@
     }
     .recommendation h4 { margin: 0 0 0.25rem; font-size: 1rem; }
     .recommendation p { margin: 0; font-size: 0.92rem; color: #475569; }
+    .metadata-bar { padding: 1rem 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem 1.25rem;
+    }
+    .metadata-grid div { display: flex; flex-direction: column; gap: 0.2rem; }
+    .metadata-grid span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; font-weight: 700; }
+    .metadata-grid strong { font-size: 0.85rem; color: var(--wc-slate); }
+    .exec-summary { background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-left: 4px solid var(--wc-accent); }
+    .exec-summary .lead { font-size: 1.05rem; color: var(--wc-black); margin-bottom: 0.75rem; }
+    .exec-summary p { margin: 0; color: #475569; font-size: 0.95rem; }
+    .funnel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .funnel-step {
+      flex: 1 1 120px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+      position: relative;
+    }
+    .funnel-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .funnel-step strong { display: block; font-size: 0.85rem; color: var(--wc-black); margin-bottom: 0.2rem; }
+    .funnel-step span { font-size: 0.75rem; color: #64748b; }
+    .sub-heading { font-size: 0.95rem; margin: 1.25rem 0 0.5rem; color: var(--wc-black); font-weight: 700; }
+    .muted { color: #64748b; font-size: 0.92rem; }
     @media (max-width: 640px) {
       .navbar { padding: 0.75rem 1rem; }
       .nav-title { display: none; }
@@ -372,9 +412,20 @@
 
 <div class="hero">
   <h1>White Car Cross-Platform Ads Audit</h1>
-  <p>Unified overview of TikTok, Meta, and Google Ads performance</p>
+  <p>Executive overview of TikTok, Meta, and Google Ads performance</p>
 </div>
 <div class="container">
+  
+<div class="card metadata-bar">
+  <div class="metadata-grid">
+    <div><span>Reporting period</span><strong>TikTok: 18 Jun 2025 – 18 Jun 2026 · Meta: 28 Jan – 18 Jun 2026 · Google: full period</strong></div>
+    <div><span>Data source</span><strong>TikTok Ads MCP, Meta Ads MCP, Google Ads MCP via Pipeboard</strong></div>
+    <div><span>Attribution</span><strong>Platform default attribution windows</strong></div>
+    <div><span>Conversion definition</span><strong>TikTok: Lead Generation form submits · Meta: Lead / messaging / form actions · Google: Form/call conversions</strong></div>
+  </div>
+</div>
+
+
   <div class="kpis">
     <div class="kpi"><div class="kpi-label">Total Spend</div><div class="kpi-value">SAR 140,178.16</div></div>
     <div class="kpi"><div class="kpi-label">Total Conversions</div><div class="kpi-value">19,836</div></div>
@@ -382,40 +433,93 @@
     <div class="kpi"><div class="kpi-label">Platforms</div><div class="kpi-value">3</div></div>
   </div>
 
-  <h2 class="section-title">CPA Comparison by Platform</h2>
+  
+<div class="card exec-summary">
+  <h2>Executive Summary</h2>
+  <p class="lead">
+    White Car generated <strong>19,836 total platform conversions</strong> at a blended CPA of <strong>SAR 7.07</strong>,
+    with TikTok driving the majority of scale. TikTok represents around <strong>91% of spend</strong> and
+    <strong>88% of conversions</strong>. TikTok is carrying most of the spend and conversions. This drives scale but creates concentration risk.
+  </p>
+  <p>
+    The most efficient platform by reported CPA is <strong>Google (SAR 4.38)</strong>,
+    but its spend volume is much smaller, so performance should be validated by lead quality before major budget shifts.
+    The next priority is to validate lead quality, connect ad conversions to CRM outcomes, and restructure campaign naming, tracking, and budget allocation.
+  </p>
+</div>
+
+
+  <h2 class="section-title">Platform Mix & Efficiency</h2>
   <div class="grid-2">
     <div class="card"><h2>CPA by Platform</h2><div class="chart-wrap"><canvas id="cpaByPlatformChart"></canvas></div></div>
     <div class="card"><h2>Spend vs Conversions</h2><div class="chart-wrap"><canvas id="spendVsConvChart"></canvas></div></div>
   </div>
 
-  <h2 class="section-title">Platform Breakdown</h2>
   <div class="platform-grid">
     
     <div class="platform-card tiktok">
       <h3><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg> TikTok</h3>
       <div class="metric-row"><span>Spend</span><span>SAR 127,850.18</span></div>
       <div class="metric-row"><span>Conversions</span><span>17,399</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>20 (2 active)</span></div>
       <div class="metric-row"><span>CPA</span><span>SAR 7.35</span></div>
-      <a href="tiktok.html">View TikTok report &rarr;</a>
+      <div class="metric-row"><span>Share</span><span>91.2% spend · 87.7% conv</span></div>
+      <a href="tiktok.html">View TikTok deep dive &rarr;</a>
     </div>
     <div class="platform-card meta">
       <h3><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.1 4.388 23.095 10.125 24v-8.437H7.078v-3.49h3.047V9.297c0-3.017 1.792-4.688 4.533-4.688 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.875v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.095 24 18.1 24 12.073z"/></svg> Meta Ads</h3>
       <div class="metric-row"><span>Spend</span><span>SAR 9,094.42</span></div>
       <div class="metric-row"><span>Conversions</span><span>1,699</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>13 (0 active)</span></div>
       <div class="metric-row"><span>CPA</span><span>SAR 5.35</span></div>
-      <a href="meta.html">View Meta report &rarr;</a>
+      <div class="metric-row"><span>Share</span><span>6.5% spend · 8.6% conv</span></div>
+      <a href="meta.html">View Meta deep dive &rarr;</a>
     </div>
     <div class="platform-card google">
       <h3><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google Ads</h3>
       <div class="metric-row"><span>Spend</span><span>SAR 3,233.56</span></div>
       <div class="metric-row"><span>Conversions</span><span>738</span></div>
-      <div class="metric-row"><span>Campaigns</span><span>2 (1 active)</span></div>
       <div class="metric-row"><span>CPA</span><span>SAR 4.38</span></div>
-      <a href="google.html">View Google report &rarr;</a>
+      <div class="metric-row"><span>Share</span><span>2.3% spend · 3.7% conv</span></div>
+      <a href="google.html">View Google deep dive &rarr;</a>
     </div>
   </div>
+
+  <div class="card"><h2>Platform Mix & Dependency Risk</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Platform</th><th>Spend</th><th>Spend Share</th><th>Conversions</th><th>Conv. Share</th><th>CPA</th><th>Strategic Role</th></tr></thead><tbody><tr><td>TikTok</td><td>SAR 127,850.18</td><td>91.2%</td><td>17,399</td><td>87.7%</td><td>SAR 7.35</td><td>Scale / volume driver</td></tr><tr><td>Meta</td><td>SAR 9,094.42</td><td>6.5%</td><td>1,699</td><td>8.6%</td><td>SAR 5.35</td><td>Audience test / retarget</td></tr><tr><td>Google</td><td>SAR 3,233.56</td><td>2.3%</td><td>738</td><td>3.7%</td><td>SAR 4.38</td><td>High-intent capture</td></tr></tbody></table></div></div>
+
+  <div class="grid-2">
+    <div class="card"><h2>Data Quality Issues & Fixes</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Issue</th><th>Impact</th><th>Fix</th></tr></thead><tbody><tr><td>Meta summary shows 0 active campaigns while active ad sets exist</td><td>Inconsistent status logic creates confusion</td><td>Separate campaign-level status from ad set-level status in reporting</td></tr><tr><td>Google hourly heatmap unavailable</td><td>Cannot identify best time/day performance</td><td>Fetch segments by day_of_week and hour from Google Ads</td></tr><tr><td>20 TikTok campaigns above SAR 10 CPA</td><td>Wasted spend if lead quality is not superior</td><td>Review and reduce budget or restructure</td></tr><tr><td>Google ROAS shown without clear revenue source validation</td><td>ROAS may be misleading without CRM confirmation</td><td>Add conversion value source and revenue validation</td></tr></tbody></table></div></div>
+    
+<div class="card">
+  <h2>Platform CPA vs Real CPA</h2>
+  <p class="muted">
+    Platform CPA is based on ad-reported conversions. For a car business, the real metric should be
+    <strong>cost per qualified lead</strong> and <strong>cost per sale</strong>. Below is the recommended lead lifecycle to track.
+  </p>
+  <div class="funnel">
+    <div class="funnel-step"><strong>New Lead</strong><span>Form / call / WhatsApp</span></div>
+    <div class="funnel-step"><strong>Valid Lead</strong><span>Real contact, correct city</span></div>
+    <div class="funnel-step"><strong>Qualified Lead</strong><span>Has need, has car/budget</span></div>
+    <div class="funnel-step"><strong>Sales Accepted</strong><span>Contacted & accepted</span></div>
+    <div class="funnel-step"><strong>Appointment</strong><span>Showroom / test drive</span></div>
+    <div class="funnel-step"><strong>Closed Deal</strong><span>Revenue</span></div>
+  </div>
+  <p class="muted" style="margin-top:1rem">
+    Example: TikTok may show SAR 7.35 CPA, but if only 10% of leads are qualified, the real qualified-lead cost is ~SAR 73.50.
+    Google may show SAR 4.38 CPA, but if intent is stronger, it may be far more valuable despite lower spend.
+  </p>
+</div>
+
+  </div>
+
+  <div class="grid-2">
+    <div class="card"><h2>Anomalies & Red Flags</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Flag</th><th>Detail</th></tr></thead><tbody><tr><td>Platform concentration risk</td><td>TikTok accounts for 91% of spend; one policy or performance issue could sharply cut lead volume.</td></tr><tr><td>Spend with zero conversions</td><td>3 TikTok campaign(s) spent SAR 79.38 without conversions.</td></tr><tr><td>Meta status inconsistency</td><td>0 active campaigns but active ad sets exist. Review campaign vs ad set status.</td></tr><tr><td>Google ROAS below 1x</td><td>Reported ROAS is 0.23x. Confirm conversion value accuracy and lead quality before scaling.</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Suggested Budget Direction</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Platform</th><th>Current Role</th><th>Issue</th><th>Next Action</th></tr></thead><tbody><tr><td>TikTok</td><td>Main volume driver</td><td>Heavy dependency, mixed campaign quality</td><td>Keep scale but reduce waste from high CPA campaigns</td></tr><tr><td>Meta</td><td>Efficient but paused/underused</td><td>Low spend and unclear campaign status</td><td>Relaunch best lead campaigns with cleaner structure</td></tr><tr><td>Google</td><td>High-intent capture</td><td>Very low spend, limited data</td><td>Increase gradually after search-term & lead-quality review</td></tr></tbody></table></div></div>
+  </div>
+
+  <div class="card"><h2>Strategic Recommendations</h2><div class="recommendation"><h4>1. Do not judge performance by CPA alone</h4><p>TikTok drives the majority of leads, but the business must validate which platform produces qualified leads and sales opportunities.</p></div><div class="recommendation"><h4>2. Reduce TikTok waste before scaling</h4><p>Campaigns above the blended CPA should be reviewed, especially high-spend campaigns with CPA above SAR 9–13.</p></div><div class="recommendation"><h4>3. Relaunch Meta with a cleaner structure</h4><p>Meta shows strong CPA potential, but the current setup appears paused or inconsistent. Relaunch with separated audiences, clear naming, and creative testing.</p></div><div class="recommendation"><h4>4. Give Google a controlled scale test</h4><p>Google has the lowest CPA, but spend is very small. Increase gradually only after reviewing search terms and lead quality.</p></div><div class="recommendation"><h4>5. Add CRM outcome tracking</h4><p>The report should show not only leads, but qualified leads, sales calls, appointments, visits, and closed deals.</p></div><div class="recommendation"><h4>6. Build a creative testing system</h4><p>TikTok and Meta need weekly creative testing by hook, car model, offer, and audience segment.</p></div></div>
+
+  <div class="card"><h2>14-Day Optimization Roadmap</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Timeline</th><th>Action</th><th>Owner</th></tr></thead><tbody><tr><td>Day 1–2</td><td>Fix campaign naming and data mapping; confirm active vs paused status</td><td>Media Team</td></tr><tr><td>Day 3–4</td><td>Validate lead quality from CRM/sales; map platform leads to lifecycle stages</td><td>Sales + Analytics</td></tr><tr><td>Day 5–7</td><td>Pause or reduce budget for campaigns above blended CPA without quality proof</td><td>Media Team</td></tr><tr><td>Week 2</td><td>Relaunch Meta winners and increase Google high-intent budget in controlled test</td><td>Media Team</td></tr><tr><td>Week 2</td><td>Add creative testing plan by hook, car model, offer, and audience</td><td>Creative Team</td></tr><tr><td>Day 14</td><td>Review qualified CPA, not just platform CPA; report cost per qualified lead</td><td>Analytics</td></tr></tbody></table></div></div>
+
+  <div class="card"><h2>Tracking & Measurement Gaps</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Gap</th><th>Why It Matters</th><th>Fix</th></tr></thead><tbody><tr><td>Platform conversions are not enough</td><td>Cannot know real lead quality</td><td>Connect leads to CRM/sales sheet</td></tr><tr><td>No visible UTM framework</td><td>Cannot compare campaigns in GA4/CRM</td><td>Standardize UTMs across all ads</td></tr><tr><td>No lead status tracking</td><td>Cannot calculate qualified CPA</td><td>Add lifecycle stages</td></tr><tr><td>No sales outcome tracking</td><td>Cannot know real ROI</td><td>Track booked / visited / sold</td></tr><tr><td>No deduplication logic</td><td>Same lead may be counted multiple times</td><td>Deduplicate by phone number / email</td></tr></tbody></table></div></div>
 
   <h2 class="section-title">Top Spend Campaigns by Platform</h2>
   <div class="grid-3">
@@ -423,11 +527,8 @@
     <div class="card"><h2>Meta Top Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>2</td><td>SAR 2,692.95</td><td>399</td><td>SAR 6.75</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 1,116.82</td><td>403</td><td>SAR 2.77</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 812.69</td><td>67</td><td>SAR 12.13</td></tr><tr><td>‏حملة إعلانية جديدة بهدف العملاء المحتمل</td><td>SAR 755.27</td><td>38</td><td>SAR 19.88</td></tr><tr><td>ماهر</td><td>SAR 721.91</td><td>186</td><td>SAR 3.88</td></tr></tbody></table></div></div>
     <div class="card"><h2>Google Top Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>29-2</td><td>SAR 2,909.99</td><td>732</td><td>0.25x</td></tr><tr><td>9-2</td><td>SAR 323.56</td><td>6</td><td>0.02x</td></tr></tbody></table></div></div>
   </div>
-
-  <h2 class="section-title">Recommendations</h2>
-  <div class="recommendation"><h4>Google ROAS below 2x</h4><p>Expand high-converting keywords/ad groups and review search terms report for waste.</p></div><div class="recommendation"><h4>Meta campaigns are paused</h4><p>Restart top-performing lead campaigns or reallocate budget to TikTok/Google.</p></div>
 </div>
-<div class="footer">Generated on 2026-06-18 14:44</div>
+<div class="footer">Generated on 2026-06-18 15:19</div>
 <script>
 const platformLabels = ["TikTok", "Meta", "Google"];
 const platformSpend = [127850.18, 9094.42, 3233.56];
