@@ -1,17 +1,16 @@
-# TikTok & Google Ads Audit Report
+# TikTok, Meta & Google Ads Audit Report
 
 Automated advertising audit for **Whitecarx** combining data from:
 
 - **TikTok Ads** account `7521672875829477392`
+- **Meta Ads** account `908730431603058`
 - **Google Ads** customer ID `348-288-3125`
 
 ## View Report
 
 Open the latest audit report here:
 
-👉 **[Live HTML Report →](https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/)**
-
-*(Enable GitHub Pages in repo settings to serve `index.html` automatically.)*
+👉 **[Live HTML Report →](https://ahmedelhosseiny1.github.io/white-Car/)**
 
 ## Files
 
@@ -20,7 +19,7 @@ Open the latest audit report here:
 | `index.html` | Self-contained HTML report with charts |
 | `audit_report.md` | Markdown version of the report |
 | `raw/` | Raw API responses from Pipeboard MCP |
-| `fetch_data.sh` | Fetches fresh data from TikTok & Google Ads APIs |
+| `fetch_data.sh` | Fetches fresh data from all three ad platforms |
 | `generate_html_report.py` | Builds `index.html` from raw data |
 | `generate_report.py` | Builds `audit_report.md` from raw data |
 | `.github/workflows/generate-report.yml` | GitHub Actions automation |
@@ -46,11 +45,11 @@ open index.html
 
 The included GitHub Actions workflow runs daily at 06:00 UTC and on manual trigger. To enable it:
 
-1. Push this repo to GitHub.
+1. Ensure the repo is on GitHub.
 2. Go to **Settings → Secrets and variables → Actions**.
 3. Add a repository secret named `PIPEBOARD_API_TOKEN` with your Pipeboard token.
 4. The workflow will fetch fresh data, regenerate both reports, and commit the updates.
 
 ## Customization
 
-Edit the advertiser/customer IDs at the top of `fetch_data.sh` to audit different accounts.
+Edit the account IDs at the top of `fetch_data.sh` to audit different accounts.

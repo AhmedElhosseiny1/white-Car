@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok & Google Ads Audit - Whitecarx</title>
+<title>TikTok, Meta & Google Ads Audit - Whitecarx</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -14,6 +14,7 @@
   --text-muted: #94a3b8;
   --accent: #38bdf8;
   --accent-2: #a855f7;
+  --meta: #f43f5e;
   --danger: #ef4444;
   --success: #22c55e;
   --warning: #f59e0b;
@@ -27,7 +28,7 @@ body {
   color: var(--text);
   line-height: 1.6;
 }
-.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
 header {
   text-align: center;
   padding: 3rem 1rem;
@@ -39,7 +40,7 @@ header p { color: var(--text-muted); margin-top: 0.5rem; }
 .section { background: var(--surface); border-radius: 16px; padding: 2rem; margin: 2rem 0; border: 1px solid var(--border); }
 .section h2 { margin-top: 0; color: var(--accent); font-size: 1.75rem; }
 .section h3 { color: var(--text); margin-top: 1.5rem; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
 .metric-card {
   background: var(--surface-2);
   border-radius: 12px;
@@ -47,16 +48,31 @@ header p { color: var(--text-muted); margin-top: 0.5rem; }
   text-align: center;
   border: 1px solid var(--border);
 }
-.metric-card .label { color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.metric-card .value { font-size: 1.75rem; font-weight: 700; margin-top: 0.25rem; }
+.metric-card .label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.metric-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 0.25rem; }
 .metric-card.positive .value { color: var(--success); }
 .metric-card.negative .value { color: var(--danger); }
 .metric-card.warning .value { color: var(--warning); }
+.metric-card.meta .value { color: var(--meta); }
 table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+th, td { padding: 0.65rem; text-align: left; border-bottom: 1px solid var(--border); }
 th { background: var(--surface-2); color: var(--accent); font-weight: 600; }
 tr:hover { background: rgba(255,255,255,0.03); }
-.chart-container { position: relative; height: 350px; margin: 2rem 0; }
+.chart-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
+.chart-container { position: relative; height: 320px; background: var(--surface-2); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
+.insight-card {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 1rem 0;
+  border-left: 4px solid var(--accent);
+}
+.insight-card.danger { border-left-color: var(--danger); }
+.insight-card.warning { border-left-color: var(--warning); }
+.insight-card.success { border-left-color: var(--success); }
+.insight-card.meta { border-left-color: var(--meta); }
+.insight-card .title { font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+.insight-card .body { color: var(--text-muted); font-size: 0.95rem; }
 .recommendations { list-style: none; padding: 0; }
 .recommendations li {
   background: var(--surface-2);
@@ -68,6 +84,7 @@ tr:hover { background: rgba(255,255,255,0.03); }
 .recommendations li.danger { border-left-color: var(--danger); }
 .recommendations li.warning { border-left-color: var(--warning); }
 .recommendations li.success { border-left-color: var(--success); }
+.recommendations li.meta { border-left-color: var(--meta); }
 .note {
   background: rgba(56, 189, 248, 0.1);
   border: 1px solid var(--accent);
@@ -76,6 +93,38 @@ tr:hover { background: rgba(255,255,255,0.03); }
   margin: 1rem 0;
   color: var(--text);
 }
+.funnel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+.funnel-step {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  min-width: 120px;
+}
+.funnel-step .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+.funnel-step .label { font-size: 0.8rem; color: var(--text-muted); }
+.funnel-step .rate { font-size: 0.75rem; color: var(--success); margin-top: 0.25rem; }
+.funnel-arrow { color: var(--text-muted); font-size: 1.5rem; }
+.platform-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-right: 0.5rem;
+}
+.badge-tiktok { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
+.badge-google { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+.badge-meta { background: rgba(244, 63, 94, 0.2); color: var(--meta); }
 footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.875rem; }
 @media (max-width: 768px) {
   .container { padding: 1rem; }
@@ -83,29 +132,31 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
   .section { padding: 1.25rem; }
   table { font-size: 0.8rem; }
   th, td { padding: 0.5rem; }
+  .chart-row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 <header>
-  <h1>TikTok & Google Ads Audit</h1>
-  <p>Whitecarx · Generated on 2026-06-18 11:51</p>
+  <h1>TikTok, Meta & Google Ads Audit</h1>
+  <p>Whitecarx · Generated on 2026-06-18 12:51</p>
 </header>
 <div class="container">
 <div class="section">
   <h2>Accounts Audited</h2>
   <div class="grid">
     <div class="metric-card"><div class="label">TikTok Ads</div><div class="value">7521672875829477392</div><div style="color:var(--text-muted);font-size:.85rem">Whitecarx1</div></div>
+    <div class="metric-card meta"><div class="label">Meta Ads</div><div class="value">908730431603058</div><div style="color:var(--text-muted);font-size:.85rem">255</div></div>
     <div class="metric-card"><div class="label">Google Ads</div><div class="value">348-288-3125</div><div style="color:var(--text-muted);font-size:.85rem">white car</div></div>
   </div>
 </div>
 <div class="section">
   <h2>Cross-Platform Summary</h2>
   <div class="grid">
-    <div class="metric-card"><div class="label">Combined Spend</div><div class="value">SAR 131,083.74</div></div>
-    <div class="metric-card"><div class="label">Combined Impressions</div><div class="value">20,454,906</div></div>
-    <div class="metric-card"><div class="label">Combined Clicks</div><div class="value">131,719</div></div>
-    <div class="metric-card"><div class="label">Combined Conversions</div><div class="value">18,137</div></div>
+    <div class="metric-card"><div class="label">Combined Spend</div><div class="value">SAR 140,178.16</div></div>
+    <div class="metric-card"><div class="label">Combined Impressions</div><div class="value">20,921,774</div></div>
+    <div class="metric-card"><div class="label">Combined Clicks</div><div class="value">139,649</div></div>
+    <div class="metric-card"><div class="label">Combined Conversions</div><div class="value">19,836</div></div>
   </div>
   <table class="">
 <thead><tr>
@@ -117,6 +168,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <th>CTR</th>
 <th>CPC</th>
 <th>CPA</th>
+<th>Conv Rate</th>
 </tr></thead><tbody>
 <tr>
 <td>TikTok</td>
@@ -127,6 +179,18 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.64%</td>
 <td>SAR 0.98</td>
 <td>SAR 7.35</td>
+<td>13.37%</td>
+</tr>
+<tr>
+<td>Meta</td>
+<td>SAR 9,094.42</td>
+<td>466,868</td>
+<td>7,930</td>
+<td>1,699</td>
+<td>1.70%</td>
+<td>SAR 1.15</td>
+<td>SAR 5.35</td>
+<td>21.42%</td>
 </tr>
 <tr>
 <td>Google Ads</td>
@@ -137,19 +201,35 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>9.31%</td>
 <td>SAR 2.05</td>
 <td>SAR 4.38</td>
+<td>46.80%</td>
 </tr>
 </tbody></table></div><div class="section">
-  <h2>Part 1: TikTok Ads Audit</h2>
-  <p><strong>Account:</strong> Whitecarx1 · <strong>Currency:</strong> SAR · <strong>Country:</strong> SA · <strong>Timezone:</strong> Asia/Baghdad</p>
+  <h2><span class="platform-badge badge-tiktok">TikTok</span> TikTok Ads Audit</h2>
+  <p><strong>Account:</strong> Whitecarx1 · <strong>Currency:</strong> SAR</p>
   <div class="grid">
     <div class="metric-card"><div class="label">Spend (365d)</div><div class="value">SAR 127,850.18</div></div>
     <div class="metric-card"><div class="label">Impressions</div><div class="value">20,437,963</div></div>
     <div class="metric-card"><div class="label">Clicks</div><div class="value">130,142</div></div>
     <div class="metric-card"><div class="label">Conversions</div><div class="value">17,399</div></div>
     <div class="metric-card"><div class="label">CTR</div><div class="value">0.64%</div></div>
-    <div class="metric-card"><div class="label">CPC</div><div class="value">SAR 0.98</div></div>
     <div class="metric-card"><div class="label">CPA</div><div class="value">SAR 7.35</div></div>
-    <div class="metric-card"><div class="label">Active / Total Campaigns</div><div class="value">2 / 20</div></div>
+    <div class="metric-card"><div class="label">Active / Total</div><div class="value">2 / 20</div></div>
+    <div class="metric-card"><div class="label">Video Plays</div><div class="value">19,329,263</div></div>
+  </div>
+
+  <h3>Video View Funnel</h3>
+  <div class="funnel">
+    <div class="funnel-step"><div class="value">20,437,963</div><div class="label">Impressions</div></div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step"><div class="value">19,329,263</div><div class="label">Video Plays</div><div class="rate">94.58%</div></div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step"><div class="value">1,386,062</div><div class="label">25% View</div><div class="rate">7.17%</div></div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step"><div class="value">651,422</div><div class="label">50% View</div><div class="rate">3.37%</div></div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step"><div class="value">424,359</div><div class="label">75% View</div><div class="rate">2.20%</div></div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step"><div class="value">236,121</div><div class="label">100% View</div><div class="rate">1.22%</div></div>
   </div>
 
   <h3>Top Campaigns by Spend</h3>
@@ -166,6 +246,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <th>CTR</th>
 <th>CPC</th>
 <th>CPA</th>
+<th>Conv Rate</th>
 </tr></thead><tbody>
 <tr>
 <td>1</td>
@@ -179,6 +260,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.71%</td>
 <td>SAR 0.84</td>
 <td>SAR 6.07</td>
+<td>13.90%</td>
 </tr>
 <tr>
 <td>2</td>
@@ -192,6 +274,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.74%</td>
 <td>SAR 0.80</td>
 <td>SAR 5.30</td>
+<td>15.00%</td>
 </tr>
 <tr>
 <td>3</td>
@@ -205,6 +288,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.71%</td>
 <td>SAR 0.73</td>
 <td>SAR 7.40</td>
+<td>9.89%</td>
 </tr>
 <tr>
 <td>4</td>
@@ -218,6 +302,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.64%</td>
 <td>SAR 2.10</td>
 <td>SAR 11.29</td>
+<td>18.58%</td>
 </tr>
 <tr>
 <td>5</td>
@@ -231,6 +316,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.57%</td>
 <td>SAR 1.88</td>
 <td>SAR 9.34</td>
+<td>20.13%</td>
 </tr>
 <tr>
 <td>6</td>
@@ -244,6 +330,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.50%</td>
 <td>SAR 1.02</td>
 <td>SAR 9.01</td>
+<td>11.37%</td>
 </tr>
 <tr>
 <td>7</td>
@@ -257,6 +344,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.49%</td>
 <td>SAR 1.29</td>
 <td>SAR 7.41</td>
+<td>17.37%</td>
 </tr>
 <tr>
 <td>8</td>
@@ -270,6 +358,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.52%</td>
 <td>SAR 2.32</td>
 <td>SAR 12.93</td>
+<td>17.92%</td>
 </tr>
 <tr>
 <td>9</td>
@@ -283,6 +372,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.64%</td>
 <td>SAR 1.33</td>
 <td>SAR 7.45</td>
+<td>17.91%</td>
 </tr>
 <tr>
 <td>10</td>
@@ -296,6 +386,242 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.94%</td>
 <td>SAR 1.69</td>
 <td>SAR 14.35</td>
+<td>11.81%</td>
+</tr>
+</tbody></table>  <h3>Best Campaigns by CPA</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Conversions</th>
+<th>CPA</th>
+<th>CTR</th>
+<th>Completion Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>إنشاء عميل محتمل20260615101250</td>
+<td>SAR 1,442.48</td>
+<td>655</td>
+<td>SAR 2.20</td>
+<td>1.05%</td>
+<td>4.08%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1863896718190705</td>
+<td>SAR 1,120.28</td>
+<td>337</td>
+<td>SAR 3.32</td>
+<td>0.40%</td>
+<td>0.68%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1863025066397729</td>
+<td>SAR 3,305.93</td>
+<td>853</td>
+<td>SAR 3.88</td>
+<td>0.33%</td>
+<td>1.75%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1861841023193089</td>
+<td>SAR 58.10</td>
+<td>14</td>
+<td>SAR 4.15</td>
+<td>0.22%</td>
+<td>0.43%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1860964384827426</td>
+<td>SAR 1,351.87</td>
+<td>275</td>
+<td>SAR 4.92</td>
+<td>1.64%</td>
+<td>0.18%</td>
+</tr>
+</tbody></table>  <h3>Worst Campaigns by CPA</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Conversions</th>
+<th>CPA</th>
+<th>CTR</th>
+<th>Completion Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>1860570324600993</td>
+<td>SAR 57.24</td>
+<td>1</td>
+<td>SAR 57.24</td>
+<td>0.30%</td>
+<td>0.00%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>إنشاء عميل محتمل20260611233124</td>
+<td>SAR 105.27</td>
+<td>3</td>
+<td>SAR 35.09</td>
+<td>0.35%</td>
+<td>0.58%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>إنشاء عميل محتمل20260611234527</td>
+<td>SAR 127.07</td>
+<td>4</td>
+<td>SAR 31.77</td>
+<td>0.92%</td>
+<td>1.38%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1858664765045921</td>
+<td>SAR 55.74</td>
+<td>2</td>
+<td>SAR 27.87</td>
+<td>0.12%</td>
+<td>0.00%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1862263203340465</td>
+<td>SAR 78.71</td>
+<td>3</td>
+<td>SAR 26.24</td>
+<td>6.22%</td>
+<td>2.52%</td>
+</tr>
+</tbody></table>  <h3>Top Ad Groups by Spend</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Ad Group</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Impressions</th>
+<th>Clicks</th>
+<th>Conv</th>
+<th>CPA</th>
+<th>Completion</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>مجموعة إعلانية 20260603111330</td>
+<td>إنشاء عميل محتمل20260603131324</td>
+<td>SAR 5,180.84</td>
+<td>323,833</td>
+<td>3,057</td>
+<td>361</td>
+<td>SAR 14.35</td>
+<td>1.29%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>مجموعة إعلانية 20260614012908</td>
+<td>إنشاء عميل محتمل20260614132904</td>
+<td>SAR 4,605.95</td>
+<td>982,676</td>
+<td>6,679</td>
+<td>902</td>
+<td>SAR 5.11</td>
+<td>2.67%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>مجموعة إعلانية 20260602053848</td>
+<td>إنشاء عميل محتمل20260602073815</td>
+<td>SAR 1,891.99</td>
+<td>123,398</td>
+<td>1,517</td>
+<td>186</td>
+<td>SAR 10.17</td>
+<td>1.68%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>طبيعي يدوي</td>
+<td>إنشاء عميل محتمل20260615101250</td>
+<td>SAR 1,442.48</td>
+<td>615,454</td>
+<td>6,446</td>
+<td>655</td>
+<td>SAR 2.20</td>
+<td>4.08%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1863180790106370</td>
+<td></td>
+<td>SAR 961.30</td>
+<td>185,885</td>
+<td>991</td>
+<td>120</td>
+<td>SAR 8.01</td>
+<td>1.03%</td>
+</tr>
+<tr>
+<td>6</td>
+<td>مجموعة إعلانية 20260614121620</td>
+<td>إنشاء عميل محتمل20260614001615</td>
+<td>SAR 783.68</td>
+<td>214,845</td>
+<td>561</td>
+<td>84</td>
+<td>SAR 9.33</td>
+<td>0.40%</td>
+</tr>
+<tr>
+<td>7</td>
+<td>مجموعة إعلانية 20260613015833</td>
+<td>إنشاء عميل محتمل20260613015830</td>
+<td>SAR 556.31</td>
+<td>66,762</td>
+<td>465</td>
+<td>35</td>
+<td>SAR 15.89</td>
+<td>1.45%</td>
+</tr>
+<tr>
+<td>8</td>
+<td>1864420800190545</td>
+<td></td>
+<td>SAR 492.29</td>
+<td>42,597</td>
+<td>303</td>
+<td>69</td>
+<td>SAR 7.13</td>
+<td>1.20%</td>
+</tr>
+<tr>
+<td>9</td>
+<td>مجموعة إعلانية 20260614124830</td>
+<td>إنشاء عميل محتمل20260614124826</td>
+<td>SAR 317.70</td>
+<td>74,911</td>
+<td>216</td>
+<td>43</td>
+<td>SAR 7.39</td>
+<td>0.55%</td>
+</tr>
+<tr>
+<td>10</td>
+<td>مجموعة إعلانية 20260530010545</td>
+<td>إنشاء عميل محتمل20260530130536</td>
+<td>SAR 239.65</td>
+<td>39,233</td>
+<td>507</td>
+<td>19</td>
+<td>SAR 12.61</td>
+<td>1.15%</td>
 </tr>
 </tbody></table>  <h3>Top Ads / Creatives by Spend</h3>
   <table class="">
@@ -420,13 +746,190 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>0.29%</td>
 <td></td>
 </tr>
+</tbody></table>  <h3>Best Ads by CTR</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Ad Name</th>
+<th>Impressions</th>
+<th>Clicks</th>
+<th>CTR</th>
+<th>Spend</th>
+<th>Conversions</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>اسم الإعلان2026-06-17 17:00:14</td>
+<td>1,610</td>
+<td>52</td>
+<td>3.23%</td>
+<td>SAR 10.83</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1868046628265537</td>
+<td>298,089</td>
+<td>5,445</td>
+<td>1.83%</td>
+<td>SAR 1,253.92</td>
+<td>614</td>
+</tr>
+<tr>
+<td>3</td>
+<td>بسام (3)_7B2T4bXs.mp4_2026-06-16 19:38:50</td>
+<td>10,490</td>
+<td>158</td>
+<td>1.51%</td>
+<td>SAR 123.55</td>
+<td>20</td>
+</tr>
+<tr>
+<td>4</td>
+<td>اسم الإعلان2026-06-17 17:00:12</td>
+<td>1,375</td>
+<td>18</td>
+<td>1.31%</td>
+<td>SAR 9.65</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1867968348312818</td>
+<td>219,586</td>
+<td>2,647</td>
+<td>1.21%</td>
+<td>SAR 856.48</td>
+<td>236</td>
+</tr>
 </tbody></table>  <h3>Daily Spend & Conversions (Last 30 Days)</h3>
   <div class="chart-container"><canvas id="tiktokDailyChart"></canvas></div>
 
-  <h3>Monthly Seasonality</h3>
-  <div class="chart-container"><canvas id="tiktokMonthlyChart"></canvas></div>
+  <h3>Monthly Seasonality & Day-of-Week</h3>
+  <div class="chart-row">
+    <div class="chart-container"><canvas id="tiktokMonthlyChart"></canvas></div>
+    <div class="chart-container"><canvas id="tiktokDowChart"></canvas></div>
+  </div>
 
-  <h3>Inactive Campaigns</h3>
+  <h3>Top Days by Spend</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Date</th>
+<th>Spend</th>
+<th>Conversions</th>
+<th>CPA</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>2026-06-14</td>
+<td>SAR 3,723.70</td>
+<td>444</td>
+<td>SAR 8.39</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2026-06-15</td>
+<td>SAR 3,000.00</td>
+<td>992</td>
+<td>SAR 3.02</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2026-06-05</td>
+<td>SAR 2,574.63</td>
+<td>193</td>
+<td>SAR 13.34</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2026-06-04</td>
+<td>SAR 2,304.33</td>
+<td>163</td>
+<td>SAR 14.14</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2026-06-03</td>
+<td>SAR 2,110.08</td>
+<td>207</td>
+<td>SAR 10.19</td>
+</tr>
+</tbody></table>  <h3>Day-of-Week Performance</h3>
+  <table class="">
+<thead><tr>
+<th>Day</th>
+<th>Spend</th>
+<th>Impressions</th>
+<th>Clicks</th>
+<th>Conversions</th>
+<th>CTR</th>
+<th>CPA</th>
+</tr></thead><tbody>
+<tr>
+<td>Monday</td>
+<td>SAR 3,384.18</td>
+<td>1,090,254</td>
+<td>9,592</td>
+<td>993</td>
+<td>0.88%</td>
+<td>SAR 3.41</td>
+</tr>
+<tr>
+<td>Tuesday</td>
+<td>SAR 2,522.21</td>
+<td>500,563</td>
+<td>4,512</td>
+<td>491</td>
+<td>0.90%</td>
+<td>SAR 5.14</td>
+</tr>
+<tr>
+<td>Wednesday</td>
+<td>SAR 2,968.03</td>
+<td>378,535</td>
+<td>3,524</td>
+<td>303</td>
+<td>0.93%</td>
+<td>SAR 9.80</td>
+</tr>
+<tr>
+<td>Thursday</td>
+<td>SAR 2,389.29</td>
+<td>179,473</td>
+<td>2,419</td>
+<td>172</td>
+<td>1.35%</td>
+<td>SAR 13.89</td>
+</tr>
+<tr>
+<td>Friday</td>
+<td>SAR 3,113.13</td>
+<td>272,691</td>
+<td>2,160</td>
+<td>208</td>
+<td>0.79%</td>
+<td>SAR 14.97</td>
+</tr>
+<tr>
+<td>Saturday</td>
+<td>SAR 2,704.86</td>
+<td>371,029</td>
+<td>2,519</td>
+<td>226</td>
+<td>0.68%</td>
+<td>SAR 11.97</td>
+</tr>
+<tr>
+<td>Sunday</td>
+<td>SAR 5,015.54</td>
+<td>971,006</td>
+<td>4,448</td>
+<td>573</td>
+<td>0.46%</td>
+<td>SAR 8.75</td>
+</tr>
+</tbody></table>  <h3>Inactive Campaigns</h3>
   <table class="">
 <thead><tr>
 <th>Campaign</th>
@@ -524,17 +1027,577 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>2026-05-08 19:24:45</td>
 </tr>
 </tbody></table></div><div class="section">
-  <h2>Part 2: Google Ads Audit</h2>
-  <p><strong>Account:</strong> white car · <strong>Currency:</strong> SAR · <strong>Timezone:</strong> Asia/Riyadh · <strong>Status:</strong> ENABLED</p>
+  <h2><span class="platform-badge badge-meta">Meta</span> Meta Ads Audit</h2>
+  <p><strong>Account:</strong> 255 · <strong>Currency:</strong> SAR · <strong>Timezone:</strong> Asia/Riyadh · <strong>Status:</strong> Active</p>
+  <div class="grid">
+    <div class="metric-card meta"><div class="label">Spend (Lifetime)</div><div class="value">SAR 9,094.42</div></div>
+    <div class="metric-card meta"><div class="label">Impressions</div><div class="value">466,868</div></div>
+    <div class="metric-card meta"><div class="label">Clicks</div><div class="value">7,930</div></div>
+    <div class="metric-card meta"><div class="label">Conversions</div><div class="value">1,699</div></div>
+    <div class="metric-card meta"><div class="label">CTR</div><div class="value">1.70%</div></div>
+    <div class="metric-card meta"><div class="label">CPA</div><div class="value">SAR 5.35</div></div>
+    <div class="metric-card meta"><div class="label">Active / Total</div><div class="value">0 / 13</div></div>
+    <div class="metric-card meta"><div class="label">Account Balance</div><div class="value">SAR 174.72</div></div>
+  </div>
+
+  <h3>Top Campaigns by Spend</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Campaign</th>
+<th>Status</th>
+<th>Objective</th>
+<th>Spend</th>
+<th>Impressions</th>
+<th>Clicks</th>
+<th>Conv</th>
+<th>CTR</th>
+<th>CPC</th>
+<th>CPA</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>UNKNOWN</td>
+<td>UNKNOWN</td>
+<td>SAR 2,692.95</td>
+<td>75,731</td>
+<td>2,346</td>
+<td>399</td>
+<td>309.78%</td>
+<td>SAR 1.15</td>
+<td>SAR 6.75</td>
+<td>17.01%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 1,116.82</td>
+<td>147,438</td>
+<td>1,644</td>
+<td>403</td>
+<td>111.50%</td>
+<td>SAR 0.68</td>
+<td>SAR 2.77</td>
+<td>24.51%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 812.69</td>
+<td>25,098</td>
+<td>266</td>
+<td>67</td>
+<td>105.98%</td>
+<td>SAR 3.06</td>
+<td>SAR 12.13</td>
+<td>25.19%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>‏حملة إعلانية جديدة بهدف العملاء المحتملونLeads Campaign - WhatsApp‏ - نسخة</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 755.27</td>
+<td>42,541</td>
+<td>197</td>
+<td>38</td>
+<td>46.31%</td>
+<td>SAR 3.83</td>
+<td>SAR 19.88</td>
+<td>19.29%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>ماهر</td>
+<td>UNKNOWN</td>
+<td>UNKNOWN</td>
+<td>SAR 721.91</td>
+<td>31,168</td>
+<td>1,019</td>
+<td>186</td>
+<td>326.94%</td>
+<td>SAR 0.71</td>
+<td>SAR 3.88</td>
+<td>18.25%</td>
+</tr>
+<tr>
+<td>6</td>
+<td>حملة إعلانية جديدة بهدف التفاعل</td>
+<td>PAUSED</td>
+<td>OUTCOME_ENGAGEMENT</td>
+<td>SAR 565.44</td>
+<td>23,367</td>
+<td>214</td>
+<td>83</td>
+<td>91.58%</td>
+<td>SAR 2.64</td>
+<td>SAR 6.81</td>
+<td>38.79%</td>
+</tr>
+<tr>
+<td>7</td>
+<td>حملة إعلانية جديدة بهدف التفاعل</td>
+<td>PAUSED</td>
+<td>OUTCOME_ENGAGEMENT</td>
+<td>SAR 535.96</td>
+<td>28,425</td>
+<td>774</td>
+<td>233</td>
+<td>272.30%</td>
+<td>SAR 0.69</td>
+<td>SAR 2.30</td>
+<td>30.10%</td>
+</tr>
+<tr>
+<td>8</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 447.02</td>
+<td>22,197</td>
+<td>301</td>
+<td>45</td>
+<td>135.60%</td>
+<td>SAR 1.49</td>
+<td>SAR 9.93</td>
+<td>14.95%</td>
+</tr>
+<tr>
+<td>9</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 442.24</td>
+<td>21,654</td>
+<td>283</td>
+<td>109</td>
+<td>130.69%</td>
+<td>SAR 1.56</td>
+<td>SAR 4.06</td>
+<td>38.52%</td>
+</tr>
+<tr>
+<td>10</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 304.96</td>
+<td>9,823</td>
+<td>141</td>
+<td>62</td>
+<td>143.54%</td>
+<td>SAR 2.16</td>
+<td>SAR 4.92</td>
+<td>43.97%</td>
+</tr>
+<tr>
+<td>11</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 269.84</td>
+<td>5,708</td>
+<td>327</td>
+<td>60</td>
+<td>572.88%</td>
+<td>SAR 0.83</td>
+<td>SAR 4.50</td>
+<td>18.35%</td>
+</tr>
+<tr>
+<td>12</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>UNKNOWN</td>
+<td>UNKNOWN</td>
+<td>SAR 233.70</td>
+<td>16,690</td>
+<td>300</td>
+<td>8</td>
+<td>179.75%</td>
+<td>SAR 0.78</td>
+<td>SAR 29.21</td>
+<td>2.67%</td>
+</tr>
+<tr>
+<td>13</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملونLeads Campaign - WhatsApp</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 92.63</td>
+<td>9,461</td>
+<td>16</td>
+<td>2</td>
+<td>16.91%</td>
+<td>SAR 5.79</td>
+<td>SAR 46.31</td>
+<td>12.50%</td>
+</tr>
+<tr>
+<td>14</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 69.52</td>
+<td>4,360</td>
+<td>77</td>
+<td>4</td>
+<td>176.61%</td>
+<td>SAR 0.90</td>
+<td>SAR 17.38</td>
+<td>5.19%</td>
+</tr>
+<tr>
+<td>15</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>PAUSED</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 33.47</td>
+<td>3,207</td>
+<td>25</td>
+<td>0</td>
+<td>77.95%</td>
+<td>SAR 1.34</td>
+<td>SAR 0.00</td>
+<td>0.00%</td>
+</tr>
+</tbody></table>  <h3>Best Campaigns by CPA</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Conversions</th>
+<th>CPA</th>
+<th>CTR</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>حملة إعلانية جديدة بهدف التفاعل</td>
+<td>SAR 535.96</td>
+<td>233</td>
+<td>SAR 2.30</td>
+<td>272.30%</td>
+<td>30.10%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>SAR 1,116.82</td>
+<td>403</td>
+<td>SAR 2.77</td>
+<td>111.50%</td>
+<td>24.51%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>ماهر</td>
+<td>SAR 721.91</td>
+<td>186</td>
+<td>SAR 3.88</td>
+<td>326.94%</td>
+<td>18.25%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>SAR 442.24</td>
+<td>109</td>
+<td>SAR 4.06</td>
+<td>130.69%</td>
+<td>38.52%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>SAR 269.84</td>
+<td>60</td>
+<td>SAR 4.50</td>
+<td>572.88%</td>
+<td>18.35%</td>
+</tr>
+</tbody></table>  <h3>Worst Campaigns by CPA</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Conversions</th>
+<th>CPA</th>
+<th>CTR</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملونLeads Campaign - WhatsApp</td>
+<td>SAR 92.63</td>
+<td>2</td>
+<td>SAR 46.31</td>
+<td>16.91%</td>
+<td>12.50%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>SAR 233.70</td>
+<td>8</td>
+<td>SAR 29.21</td>
+<td>179.75%</td>
+<td>2.67%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>‏حملة إعلانية جديدة بهدف العملاء المحتملونLeads Campaign - WhatsApp‏ - نسخة</td>
+<td>SAR 755.27</td>
+<td>38</td>
+<td>SAR 19.88</td>
+<td>46.31%</td>
+<td>19.29%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>SAR 69.52</td>
+<td>4</td>
+<td>SAR 17.38</td>
+<td>176.61%</td>
+<td>5.19%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>SAR 812.69</td>
+<td>67</td>
+<td>SAR 12.13</td>
+<td>105.98%</td>
+<td>25.19%</td>
+</tr>
+</tbody></table>  <h3>Campaign Spend Distribution</h3>
+  <div class="chart-container"><canvas id="metaCampaignChart"></canvas></div>
+
+  <h3>Ad Set Targeting Summary</h3>
+  <table class="">
+<thead><tr>
+<th>Ad Set</th>
+<th>Campaign</th>
+<th>Status</th>
+<th>Daily Budget</th>
+<th>Age</th>
+<th>Countries</th>
+<th>Top Interests</th>
+</tr></thead><tbody>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120247179980970299</td>
+<td>PAUSED</td>
+<td>SAR 0.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Automobiles, Luxury vehicle</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120245523050910299</td>
+<td>PAUSED</td>
+<td>SAR 0.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Vehicles</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120244975984700299</td>
+<td>ACTIVE</td>
+<td>SAR 0.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Vehicles</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120244959184080299</td>
+<td>ACTIVE</td>
+<td>SAR 120.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Vehicles, Automobiles, Motor vehicle</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120244193621220299</td>
+<td>ACTIVE</td>
+<td>SAR 300.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Automobiles, Luxury vehicle</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120244177981420299</td>
+<td>ACTIVE</td>
+<td>SAR 300.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Automobiles, Luxury vehicle</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120243328458000299</td>
+<td>ACTIVE</td>
+<td>SAR 300.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Vehicles, Automobiles</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120243287937270299</td>
+<td>ACTIVE</td>
+<td>SAR 300.00</td>
+<td>18-60</td>
+<td>SA</td>
+<td>Vehicles, Financial services, Automobiles</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف التفاعل</td>
+<td>120241268685790299</td>
+<td>PAUSED</td>
+<td>SAR 500.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Financial services, Automobiles</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120240920561080299</td>
+<td>PAUSED</td>
+<td>SAR 300.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Finance, Vehicles, Automobiles, Toyota Camry, Hyundai</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>120240858686490299</td>
+<td>PAUSED</td>
+<td>SAR 200.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Finance, Vehicles, Automobiles, Hyundai Elantra, Hyundai</td>
+</tr>
+<tr>
+<td>مجموعة إعلانية جديدة بهدف التفاعل</td>
+<td>120240820588300299</td>
+<td>ACTIVE</td>
+<td>SAR 100.00</td>
+<td>18-65</td>
+<td>SA</td>
+<td>Finance, Vehicles, Kia Motors, Financial services, Automobiles</td>
+</tr>
+</tbody></table>  <h3>Paused Campaigns</h3>
+  <table class="">
+<thead><tr>
+<th>Campaign</th>
+<th>Objective</th>
+<th>Daily Budget</th>
+<th>Start Time</th>
+</tr></thead><tbody>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 655.00</td>
+<td>2026-06-03T10:01:32+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 500.00</td>
+<td>2026-05-11T17:51:25+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 200.00</td>
+<td>2026-05-03T10:46:00+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-05-02T23:59:23+0300</td>
+</tr>
+<tr>
+<td>‏حملة إعلانية جديدة بهدف العملاء المحتملونLeads Campaign - WhatsApp‏ - نسخة</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-04-22T20:29:34+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملونLeads Campaign - WhatsApp</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-04-22T17:39:27+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>1970-01-01T02:59:59+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-04-08T21:17:15+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-04-08T00:52:49+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف التفاعل</td>
+<td>OUTCOME_ENGAGEMENT</td>
+<td>SAR 0.00</td>
+<td>2026-02-28T21:20:28+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-02-20T21:15:05+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف العملاء المحتملون</td>
+<td>OUTCOME_LEADS</td>
+<td>SAR 0.00</td>
+<td>2026-02-19T00:55:00+0300</td>
+</tr>
+<tr>
+<td>حملة إعلانية جديدة بهدف التفاعل</td>
+<td>OUTCOME_ENGAGEMENT</td>
+<td>SAR 0.00</td>
+<td>2026-02-17T18:25:07+0300</td>
+</tr>
+</tbody></table></div><div class="section">
+  <h2><span class="platform-badge badge-google">Google</span> Google Ads Audit</h2>
+  <p><strong>Account:</strong> white car · <strong>Currency:</strong> SAR</p>
   <div class="grid">
     <div class="metric-card"><div class="label">Spend (All Time)</div><div class="value">SAR 3,233.56</div></div>
     <div class="metric-card"><div class="label">Impressions</div><div class="value">16,943</div></div>
     <div class="metric-card"><div class="label">Clicks</div><div class="value">1,577</div></div>
     <div class="metric-card"><div class="label">Conversions</div><div class="value">738</div></div>
     <div class="metric-card"><div class="label">CTR</div><div class="value">9.31%</div></div>
-        <div class="metric-card"><div class="label">CPA</div><div class="value">SAR 4.38</div></div>
-        <div class="metric-card"><div class="label">ROAS</div><div class="value">0.23x</div></div>
-        <div class="metric-card"><div class="label">Active / Total Campaigns</div><div class="value">1 / 2</div></div>
+    <div class="metric-card"><div class="label">CPA</div><div class="value">SAR 4.38</div></div>
+    <div class="metric-card"><div class="label">ROAS</div><div class="value">0.23x</div></div>
+    <div class="metric-card"><div class="label">Active / Total</div><div class="value">1 / 2</div></div>
   </div>
 
   <h3>Top Campaigns by Spend</h3>
@@ -551,6 +1614,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <th>CPC</th>
 <th>CPA</th>
 <th>ROAS</th>
+<th>Conv Rate</th>
 </tr></thead><tbody>
 <tr>
 <td>1</td>
@@ -564,6 +1628,7 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>SAR 1.97</td>
 <td>SAR 3.98</td>
 <td>0.25x</td>
+<td>49.53%</td>
 </tr>
 <tr>
 <td>2</td>
@@ -577,11 +1642,215 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>SAR 3.27</td>
 <td>SAR 53.93</td>
 <td>0.02x</td>
+<td>6.06%</td>
 </tr>
-</tbody></table>  <h3>Monthly Trends</h3>
-  <div class="chart-container"><canvas id="googleMonthlyChart"></canvas></div>
+</tbody></table>  <h3>Best Campaigns by CPA</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Conversions</th>
+<th>CPA</th>
+<th>ROAS</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>29-2</td>
+<td>SAR 2,909.99</td>
+<td>732</td>
+<td>SAR 3.98</td>
+<td>0.25x</td>
+<td>49.53%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>9-2</td>
+<td>SAR 323.56</td>
+<td>6</td>
+<td>SAR 53.93</td>
+<td>0.02x</td>
+<td>6.06%</td>
+</tr>
+</tbody></table>  <h3>Ad Group Performance</h3>
+  <table class="">
+<thead><tr>
+<th>Rank</th>
+<th>Ad Group</th>
+<th>Campaign</th>
+<th>Spend</th>
+<th>Clicks</th>
+<th>Conv</th>
+<th>CPA</th>
+<th>CTR</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>المجموعة الإعلانية رقم 1</td>
+<td>29-2</td>
+<td>SAR 2,912.07</td>
+<td>1,479</td>
+<td>732</td>
+<td>SAR 3.98</td>
+<td>9.02%</td>
+<td>49.49%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>المجموعة الإعلانية رقم 1</td>
+<td>9-2</td>
+<td>SAR 323.56</td>
+<td>99</td>
+<td>6</td>
+<td>SAR 53.93</td>
+<td>17.40%</td>
+<td>6.06%</td>
+</tr>
+</tbody></table>  <h3>Monthly Trends & Day-of-Week CPA</h3>
+  <div class="chart-row">
+    <div class="chart-container"><canvas id="googleMonthlyChart"></canvas></div>
+    <div class="chart-container"><canvas id="googleDowChart"></canvas></div>
+  </div>
 
-  <h3>Responsive Search Ads</h3>
+  <h3>Device Breakdown</h3>
+  <table class="">
+<thead><tr>
+<th>Device</th>
+<th>Spend</th>
+<th>Impressions</th>
+<th>Clicks</th>
+<th>Conversions</th>
+<th>CTR</th>
+<th>CPA</th>
+<th>ROAS</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>Mobile</td>
+<td>SAR 3,131.65</td>
+<td>16,589</td>
+<td>1,532</td>
+<td>727</td>
+<td>9.24%</td>
+<td>SAR 4.31</td>
+<td>0.23x</td>
+<td>47.45%</td>
+</tr>
+<tr>
+<td>Desktop</td>
+<td>SAR 70.29</td>
+<td>226</td>
+<td>26</td>
+<td>3</td>
+<td>11.50%</td>
+<td>SAR 23.43</td>
+<td>0.04x</td>
+<td>11.54%</td>
+</tr>
+<tr>
+<td>Tablet</td>
+<td>SAR 33.70</td>
+<td>148</td>
+<td>20</td>
+<td>8</td>
+<td>13.51%</td>
+<td>SAR 4.21</td>
+<td>0.24x</td>
+<td>40.00%</td>
+</tr>
+</tbody></table>  <h3>Day-of-Week Performance</h3>
+  <table class="">
+<thead><tr>
+<th>Day</th>
+<th>Spend</th>
+<th>Impressions</th>
+<th>Clicks</th>
+<th>Conversions</th>
+<th>CTR</th>
+<th>CPA</th>
+<th>ROAS</th>
+<th>Conv Rate</th>
+</tr></thead><tbody>
+<tr>
+<td>Monday</td>
+<td>SAR 535.01</td>
+<td>2,582</td>
+<td>263</td>
+<td>356</td>
+<td>10.19%</td>
+<td>SAR 1.50</td>
+<td>0.67x</td>
+<td>135.36%</td>
+</tr>
+<tr>
+<td>Tuesday</td>
+<td>SAR 637.32</td>
+<td>3,253</td>
+<td>339</td>
+<td>67</td>
+<td>10.42%</td>
+<td>SAR 9.51</td>
+<td>0.11x</td>
+<td>19.76%</td>
+</tr>
+<tr>
+<td>Wednesday</td>
+<td>SAR 648.74</td>
+<td>3,829</td>
+<td>334</td>
+<td>77</td>
+<td>8.72%</td>
+<td>SAR 8.43</td>
+<td>0.12x</td>
+<td>23.05%</td>
+</tr>
+<tr>
+<td>Thursday</td>
+<td>SAR 236.56</td>
+<td>2,108</td>
+<td>132</td>
+<td>59</td>
+<td>6.26%</td>
+<td>SAR 4.01</td>
+<td>0.25x</td>
+<td>44.70%</td>
+</tr>
+<tr>
+<td>Friday</td>
+<td>SAR 268.00</td>
+<td>1,629</td>
+<td>138</td>
+<td>59</td>
+<td>8.47%</td>
+<td>SAR 4.54</td>
+<td>0.22x</td>
+<td>42.75%</td>
+</tr>
+<tr>
+<td>Saturday</td>
+<td>SAR 267.82</td>
+<td>1,594</td>
+<td>134</td>
+<td>62</td>
+<td>8.41%</td>
+<td>SAR 4.32</td>
+<td>0.23x</td>
+<td>46.27%</td>
+</tr>
+<tr>
+<td>Sunday</td>
+<td>SAR 642.19</td>
+<td>1,968</td>
+<td>238</td>
+<td>58</td>
+<td>12.09%</td>
+<td>SAR 11.07</td>
+<td>0.09x</td>
+<td>24.37%</td>
+</tr>
+</tbody></table>  <h3>Responsive Search Ads</h3>
     <div class="note" style="margin-bottom:1rem">
     <strong>Ad 1:</strong> 796843894445 (ENABLED)<br>
     <strong>Campaign:</strong> 9-2<br>
@@ -591,13 +1860,13 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
   <div class="note" style="margin-bottom:1rem">
     <strong>Ad 2:</strong> 798652168794 (ENABLED)<br>
     <strong>Campaign:</strong> 29-2<br>
-    <strong>Headlines:</strong> تمويل سيارات راتب 3000, شراء سيارة بالتقسيط, شركات تمويل السيارات بالسعوديه, شركة سهل لسيارات, عروض تمويل سيارات بالسعوديه, web analyse, {Keyword:whitecar}, تمويل السيارات خلال 72 ساعة<br>
+    <strong>Headlines:</strong> تمويل سيارات راتب 3000, شراء سيارة بالتقسيط, شركات تمويل السيارات بالسعوديه, شركة سهل لسيارات, عروض تمويل سيارات بالسعوديه, web analyse, {Keyword:whitecar}, تمويل السيارات خلال 72 ساعة, أفضل شركة تمويل سيارات, كار بروكر<br>
     <strong>Descriptions:</strong> عروض تمويل السيارات, تمويل سيارات معتمد بأفضل العروض وأسرع موافقة داخل المملكة, تمويل سيارات بدون دفعة اولى
   </div>
   <div class="note" style="margin-bottom:1rem">
     <strong>Ad 3:</strong> 812654981741 (ENABLED)<br>
     <strong>Campaign:</strong> 29-2<br>
-    <strong>Headlines:</strong> تمويل سيارات راتب 3000, شراء سيارة بالتقسيط, شركات تمويل السيارات بالسعوديه, شركة سهل لسيارات, عروض تمويل سيارات بالسعوديه, web analyse, {Keyword:whitecar}, تمويل السيارات خلال 72 ساعة<br>
+    <strong>Headlines:</strong> تمويل سيارات راتب 3000, شراء سيارة بالتقسيط, شركات تمويل السيارات بالسعوديه, شركة سهل لسيارات, عروض تمويل سيارات بالسعوديه, web analyse, {Keyword:whitecar}, تمويل السيارات خلال 72 ساعة, أفضل شركة تمويل سيارات, كار بروكر<br>
     <strong>Descriptions:</strong> عروض تمويل السيارات, تمويل سيارات معتمد بأفضل العروض وأسرع موافقة داخل المملكة, تمويل سيارات بدون دفعة اولى
   </div>
   <h3>Inactive Campaigns</h3>
@@ -615,18 +1884,68 @@ footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size:
 <td>SAR 120.00</td>
 </tr>
 </tbody></table></div><div class="section">
-  <h2>Recommendations</h2>
+  <h2>Key Insights</h2>
+  <div class="insight-card success">
+    <div class="title">Top TikTok Spender</div>
+    <div class="body">1863327990726769 spent SAR 12,176.21 with CPA SAR 6.07 and CTR 0.71%.</div>
+  </div>
+  <div class="insight-card success">
+    <div class="title">Best TikTok CPA</div>
+    <div class="body">إنشاء عميل محتمل20260615101250 has the lowest CPA at SAR 2.20 — consider scaling.</div>
+  </div>
+  <div class="insight-card danger">
+    <div class="title">Worst TikTok CPA</div>
+    <div class="body">1860570324600993 has the highest CPA at SAR 57.24 — review targeting and creative.</div>
+  </div>
+  <div class="insight-card warning">
+    <div class="title">TikTok Video Completion</div>
+    <div class="body">1.22% of viewers watch to 100%. Improve hook and pacing to boost retention.</div>
+  </div>
+  <div class="insight-card meta">
+    <div class="title">Meta Account Health</div>
+    <div class="body">Account '255' has spent SAR 9,094.42 with 1,699 conversions (CPA SAR 5.35). Balance remaining: SAR 174.72.</div>
+  </div>
+  <div class="insight-card meta">
+    <div class="title">Top Meta Spender</div>
+    <div class="body">2 is the highest spender at SAR 2,692.95 with CTR 309.78%.</div>
+  </div>
+  <div class="insight-card meta">
+    <div class="title">Best Meta CPA</div>
+    <div class="body">حملة إعلانية جديدة بهدف التفاعل has the lowest CPA at SAR 2.30 — scale this campaign.</div>
+  </div>
+  <div class="insight-card warning">
+    <div class="title">Meta Campaigns Paused</div>
+    <div class="body">13 of 13 Meta campaigns are paused.</div>
+  </div>
+  <div class="insight-card success">
+    <div class="title">Top Google Spender</div>
+    <div class="body">29-2 spent SAR 2,909.99 with CPA SAR 3.98 and ROAS 0.25x.</div>
+  </div>
+  <div class="insight-card success">
+    <div class="title">Best Google Device</div>
+    <div class="body">Mobile has the highest conversion rate (47.45%).</div>
+  </div>
+  <div class="insight-card danger">
+    <div class="title">Google ROAS</div>
+    <div class="body">Overall ROAS is 0.23x. Revenue does not cover ad spend.</div>
+  </div>
+</div><div class="section">
+  <h2>Strategic Recommendations</h2>
   <ul class="recommendations">
-    <li class='warning'>TikTok average CPA is <strong>SAR 7.35</strong>. Benchmark against lead value; reduce bids if CPA exceeds 30% of LTV.</li>
+    <li class='warning'>TikTok average CPA is <strong>SAR 7.35</strong>. Benchmark against lead value; reduce bids on ad groups with CPA > 30% of LTV.</li>
     <li class='warning'><strong>19 TikTok campaigns</strong> have CTR below 0.50%. Refresh creatives and test new hooks/thumbnails.</li>
     <li class='danger'><strong>18 TikTok campaigns</strong> are inactive. Review whether to re-enable or retire them.</li>
-    <li class='warning'>Overall TikTok CTR is <strong>0.64%</strong>, below the ~1% auction benchmark. Test stronger CTAs and opening frames.</li>
+    <li class='warning'>TikTok video completion is only <strong>1.22%</strong>. Test shorter videos or stronger hooks in the first 3 seconds.</li>
     <li class='success'>Peak TikTok spend month was <strong>2026-06</strong> (SAR 17,459.19). Plan budget increases ahead of similar seasonal windows.</li>
-    <li class='success'>Consolidate TikTok budget into the top 3 conversion-driving campaigns to improve algorithm learning and efficiency.</li>
-    <li class='warning'>Google Ads CPA is <strong>SAR 4.38</strong>. Compare quality of Google leads vs TikTok leads.</li>
-    <li class='danger'>Google Ads ROAS is <strong>0.23x</strong>. If below target, review keyword targeting and negative keywords.</li>
+    <li class='success'>Consolidate TikTok budget into the top 3 campaigns by conversion volume to improve algorithm learning and efficiency.</li>
+    <li class='meta'>Meta CPA is <strong>SAR 5.35</strong>. Compare lead quality vs TikTok/Google and reallocate budget to the best CPA campaign: <strong>حملة إعلانية جديدة بهدف التفاعل</strong>.</li>
+    <li class='warning'><strong>13 Meta campaigns</strong> are paused. If they had good CPA, reactivate them; if poor, keep paused and reallocate budget.</li>
+    <li class='danger'>Meta account balance is low (<strong>SAR 174.72</strong>). Top up soon to avoid delivery interruptions.</li>
+    <li class='meta'>Test Meta Advantage+ Audiences and broader targeting on the best-performing campaign to scale efficiently.</li>
+    <li class='warning'>Google Ads CPA is <strong>SAR 4.38</strong>. Compare quality of Google leads vs TikTok/Meta leads.</li>
+    <li class='danger'>Google Ads ROAS is <strong>0.23x</strong>. Revenue does not cover ad spend — review keywords and landing pages.</li>
     <li class='warning'><strong>1 Google Ads campaign</strong> is paused. Evaluate if reactivation makes sense.</li>
-    <li class='success'>Google Ads has only 2 campaigns with small budgets (SAR 120 and SAR 260/day). Consider scaling the better performer after reviewing conversion quality.</li>
+    <li class='success'>Google Ads has only 2 campaigns with small budgets. Consider scaling the better performer after reviewing conversion quality.</li>
     <li class='success'>Add more RSA headlines and descriptions to improve ad strength and auction coverage.</li>
   </ul>
 </div>
@@ -691,6 +2010,53 @@ new Chart(tiktokMonthlyCtx, {
   }
 });
 
+const tiktokDowCtx = document.getElementById('tiktokDowChart').getContext('2d');
+new Chart(tiktokDowCtx, {
+  type: 'bar',
+  data: {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    datasets: [{
+      label: 'Spend (SAR)',
+      data: [3384.18, 2522.21, 2968.0299999999997, 2389.29, 3113.13, 2704.8599999999997, 5015.54],
+      backgroundColor: 'rgba(168, 85, 247, 0.7)'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { color: 'rgba(255,255,255,0.05)' } } },
+    plugins: { legend: { labels: { color: '#f8fafc' } } }
+  }
+});
+
+const metaCampaignCtx = document.getElementById('metaCampaignChart').getContext('2d');
+new Chart(metaCampaignCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ["2", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f", "\u200f\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c", "\u0645\u0627\u0647\u0631", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f"],
+    datasets: [{
+      data: [2692.95, 1116.82, 812.69, 755.27, 721.91, 565.44, 535.96, 447.02, 442.24, 304.96],
+      backgroundColor: [
+        'rgba(244, 63, 94, 0.8)',
+        'rgba(56, 189, 248, 0.8)',
+        'rgba(34, 197, 94, 0.8)',
+        'rgba(245, 158, 11, 0.8)',
+        'rgba(168, 85, 247, 0.8)',
+        'rgba(236, 72, 153, 0.8)',
+        'rgba(99, 102, 241, 0.8)',
+        'rgba(20, 184, 166, 0.8)',
+        'rgba(251, 146, 60, 0.8)',
+        'rgba(139, 92, 246, 0.8)'
+      ]
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { color: '#f8fafc' } } }
+  }
+});
+
 const googleMonthlyCtx = document.getElementById('googleMonthlyChart').getContext('2d');
 new Chart(googleMonthlyCtx, {
   type: 'bar',
@@ -700,6 +2066,28 @@ new Chart(googleMonthlyCtx, {
       label: 'Spend (SAR)',
       data: [2733.458901, 298.987273, 201.113501],
       backgroundColor: 'rgba(34, 197, 94, 0.7)'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { color: 'rgba(255,255,255,0.05)' } } },
+    plugins: { legend: { labels: { color: '#f8fafc' } } }
+  }
+});
+
+const googleDowCtx = document.getElementById('googleDowChart').getContext('2d');
+new Chart(googleDowCtx, {
+  type: 'line',
+  data: {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    datasets: [{
+      label: 'CPA (SAR)',
+      data: [1.5028419943820226, 9.512181417910448, 8.425179532467533, 4.0095017627118645, 4.54245620338983, 4.31967964516129, 11.072194620689654],
+      borderColor: 'rgba(34, 197, 94, 1)',
+      backgroundColor: 'rgba(34, 197, 94, 0.2)',
+      tension: 0.3,
+      fill: true
     }]
   },
   options: {
