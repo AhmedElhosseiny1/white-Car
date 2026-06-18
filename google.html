@@ -295,7 +295,12 @@
       gap: 0.5rem;
       font-size: 1.15rem;
     }
-    .platform-card .platform-icon { width: 28px; height: 28px; }
+    .platform-card .platform-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .hero .platform-icon { color: #fff; width: 26px; height: 26px; }
+    .platform-card.tiktok .platform-icon { color: #000; }
+    .platform-card.meta .platform-icon { color: #1877f2; }
+    .platform-card.google .platform-icon { color: #4285f4; }
+    .card h2 .platform-icon { width: 20px; height: 20px; color: var(--wc-slate); }
     .platform-card .metric-row {
       display: flex;
       justify-content: space-between;
@@ -366,7 +371,7 @@
 </nav>
 
 <div class="hero">
-  <h1><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="platform-icon" alt="Google"> Google Ads</h1>
+  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google Ads</h1>
   <p>Account: white car (3482883125)</p>
 </div>
 <div class="container">
@@ -439,29 +444,69 @@
     <div class="card"><h2>Conversions by Campaign</h2><div class="chart-wrap"><canvas id="googleConvChart"></canvas></div></div>
   </div>
 
+  <h2 class="section-title">Timing & Efficiency</h2>
   <div class="grid-3">
+    <div class="card"><h2>CPA Heatmap by Day & Hour</h2><div class="no-data">No hourly breakdown available.</div></div>
+    <div class="card"><h2>Top Performing Weekdays (by ROAS)</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Day</th><th>Spend</th><th>Conv.</th><th>ROAS</th><th>CPA</th></tr></thead><tbody><tr><td>Monday</td><td>SAR 535.01</td><td>356</td><td>0.67x</td><td>SAR 1.50</td></tr><tr><td>Thursday</td><td>SAR 236.56</td><td>59</td><td>0.25x</td><td>SAR 4.01</td></tr><tr><td>Saturday</td><td>SAR 267.82</td><td>62</td><td>0.23x</td><td>SAR 4.32</td></tr><tr><td>Friday</td><td>SAR 268.00</td><td>59</td><td>0.22x</td><td>SAR 4.54</td></tr><tr><td>Wednesday</td><td>SAR 648.74</td><td>77</td><td>0.12x</td><td>SAR 8.43</td></tr><tr><td>Tuesday</td><td>SAR 637.32</td><td>67</td><td>0.11x</td><td>SAR 9.51</td></tr><tr><td>Sunday</td><td>SAR 642.19</td><td>58</td><td>0.09x</td><td>SAR 11.07</td></tr></tbody></table></div></div>
     <div class="card"><h2>Monthly Spend</h2><div class="chart-wrap small"><canvas id="googleMonthlyChart"></canvas></div></div>
-    <div class="card"><h2>Device Breakdown</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Device</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>Mobile</td><td>SAR 3,131.65</td><td>727</td><td>0.23x</td></tr><tr><td>Desktop</td><td>SAR 70.29</td><td>3</td><td>0.04x</td></tr><tr><td>Tablet</td><td>SAR 33.70</td><td>8</td><td>0.24x</td></tr></tbody></table></div></div>
-    <div class="card"><h2>Day of Week</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Day</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>Monday</td><td>SAR 535.01</td><td>356</td><td>0.67x</td></tr><tr><td>Tuesday</td><td>SAR 637.32</td><td>67</td><td>0.11x</td></tr><tr><td>Wednesday</td><td>SAR 648.74</td><td>77</td><td>0.12x</td></tr><tr><td>Thursday</td><td>SAR 236.56</td><td>59</td><td>0.25x</td></tr><tr><td>Friday</td><td>SAR 268.00</td><td>59</td><td>0.22x</td></tr><tr><td>Saturday</td><td>SAR 267.82</td><td>62</td><td>0.23x</td></tr><tr><td>Sunday</td><td>SAR 642.19</td><td>58</td><td>0.09x</td></tr></tbody></table></div></div>
   </div>
 
-  <h2 class="section-title">Ad Group Insights</h2>
-  <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>ROAS</th></tr></thead><tbody><tr><td>المجموعة الإعلانية رقم 1</td><td>29-2</td><td>SAR 2,912.07</td><td>732</td><td>SAR 3.98</td><td>0.25x</td></tr><tr><td>المجموعة الإعلانية رقم 1</td><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td><td>0.02x</td></tr></tbody></table></div></div>
+  <h2 class="section-title">Breakdowns</h2>
+  <div class="grid-3">
+    <div class="card"><h2>Device Breakdown</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Device</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>Mobile</td><td>SAR 3,131.65</td><td>727</td><td>0.23x</td></tr><tr><td>Desktop</td><td>SAR 70.29</td><td>3</td><td>0.04x</td></tr><tr><td>Tablet</td><td>SAR 33.70</td><td>8</td><td>0.24x</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Day of Week</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Day</th><th>Spend</th><th>Conv.</th><th>ROAS</th></tr></thead><tbody><tr><td>Monday</td><td>SAR 535.01</td><td>356</td><td>0.67x</td></tr><tr><td>Tuesday</td><td>SAR 637.32</td><td>67</td><td>0.11x</td></tr><tr><td>Wednesday</td><td>SAR 648.74</td><td>77</td><td>0.12x</td></tr><tr><td>Thursday</td><td>SAR 236.56</td><td>59</td><td>0.25x</td></tr><tr><td>Friday</td><td>SAR 268.00</td><td>59</td><td>0.22x</td></tr><tr><td>Saturday</td><td>SAR 267.82</td><td>62</td><td>0.23x</td></tr><tr><td>Sunday</td><td>SAR 642.19</td><td>58</td><td>0.09x</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>ROAS</th></tr></thead><tbody><tr><td>المجموعة الإعلانية رقم 1</td><td>29-2</td><td>SAR 2,912.07</td><td>732</td><td>SAR 3.98</td><td>0.25x</td></tr><tr><td>المجموعة الإعلانية رقم 1</td><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td><td>0.02x</td></tr></tbody></table></div></div>
+  </div>
 
   <div class="card"><h2>Best CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>29-2</td><td>SAR 2,909.99</td><td>732</td><td>SAR 3.98</td></tr><tr><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td></tr></tbody></table></div></div>
 </div>
-<div class="footer">Generated on 2026-06-18 13:08</div>
+<div class="footer">Generated on 2026-06-18 14:44</div>
 <script>
 const googleLabels = ["29-2", "9-2"];
 const googleSpend = [2909.994921, 323.564754];
 const googleConv = [732, 6];
+const googleCpa = [3.9754028975409836, 53.927459];
 const googleMonthLabels = ["2026-03-01", "2026-06-01", "2026-02-01"];
 const googleMonthSpend = [2733.458901, 298.987273, 201.113501];
 new Chart(document.getElementById('googleSpendChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'Spend (SAR)', data:googleSpend, backgroundColor:'#4285f4', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 new Chart(document.getElementById('googleConvChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'Conversions', data:googleConv, backgroundColor:'#34a853', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('googleCpaChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'CPA (SAR)', data:googleCpa, backgroundColor:'#e74c3c', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true, text:'CPA (SAR)'}}}}});
 new Chart(document.getElementById('googleMonthlyChart'), {type:'line', data:{labels:googleMonthLabels, datasets:[{label:'Spend', data:googleMonthSpend, borderColor:'#4285f4', backgroundColor:'rgba(66,133,244,0.1)', fill:true, tension:0.3}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 </script>
 </body></html>
+
+<script>
+function applyFilters(platform){
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const status = document.getElementById('statusFilter').value;
+  const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
+  const tableIds = {
+    tiktok: 'tiktokCampaignsTable',
+    meta: 'metaCampaignsTable',
+    google: 'googleCampaignsTable'
+  };
+  const table = document.getElementById(tableIds[platform]);
+  if(!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    let show = true;
+    const rowStatus = row.getAttribute('data-status') || '';
+    const rowSpend = parseFloat(row.getAttribute('data-spend') || 0);
+    if(status === 'active' && !(rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(status === 'inactive' && (rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(rowSpend < minSpend) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+function resetFilters(platform){
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('minSpend').value = '';
+  applyFilters(platform);
+}
+</script>
 
 <script>
 function applyFilters(platform){

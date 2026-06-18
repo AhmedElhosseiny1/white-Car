@@ -295,7 +295,12 @@
       gap: 0.5rem;
       font-size: 1.15rem;
     }
-    .platform-card .platform-icon { width: 28px; height: 28px; }
+    .platform-card .platform-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .hero .platform-icon { color: #fff; width: 26px; height: 26px; }
+    .platform-card.tiktok .platform-icon { color: #000; }
+    .platform-card.meta .platform-icon { color: #1877f2; }
+    .platform-card.google .platform-icon { color: #4285f4; }
+    .card h2 .platform-icon { width: 20px; height: 20px; color: var(--wc-slate); }
     .platform-card .metric-row {
       display: flex;
       justify-content: space-between;
@@ -366,7 +371,7 @@
 </nav>
 
 <div class="hero">
-  <h1><img src="https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" class="platform-icon" alt="Tiktok"> TikTok Ads</h1>
+  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg> TikTok Ads</h1>
   <p>Advertiser: Whitecarx1 (ID 7521672875829477392)</p>
 </div>
 <div class="container">
@@ -1268,16 +1273,23 @@
     <div class="card"><h2>Daily Conversions</h2><div class="chart-wrap"><canvas id="ttDailyConvChart"></canvas></div></div>
   </div>
 
+  <h2 class="section-title">Timing & Efficiency</h2>
+  <div class="grid-3">
+    <div class="card"><h2>Spend & CPA by Day of Week</h2><div class="chart-wrap small"><canvas id="ttDowChart"></canvas></div></div>
+    <div class="card"><h2>Top Performing Weekdays (by CPA)</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Day</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>CTR</th></tr></thead><tbody><tr><td>Monday</td><td>SAR 3,384.18</td><td>993</td><td>SAR 3.41</td><td>0.01%</td></tr><tr><td>Tuesday</td><td>SAR 2,522.21</td><td>491</td><td>SAR 5.14</td><td>0.01%</td></tr><tr><td>Sunday</td><td>SAR 5,015.54</td><td>573</td><td>SAR 8.75</td><td>0.00%</td></tr><tr><td>Wednesday</td><td>SAR 2,968.03</td><td>303</td><td>SAR 9.80</td><td>0.01%</td></tr><tr><td>Saturday</td><td>SAR 2,704.86</td><td>226</td><td>SAR 11.97</td><td>0.01%</td></tr><tr><td>Thursday</td><td>SAR 2,389.29</td><td>172</td><td>SAR 13.89</td><td>0.01%</td></tr><tr><td>Friday</td><td>SAR 3,113.13</td><td>208</td><td>SAR 14.97</td><td>0.01%</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Hourly Performance (Yesterday)</h2><div class="chart-wrap small"><canvas id="ttHourlyChart"></canvas></div></div>
+  </div>
+
   <h2 class="section-title">Performance Deep Dive</h2>
   <div class="grid-3">
-    <div class="card"><h2>Spend by Day of Week</h2><div class="chart-wrap small"><canvas id="ttDowChart"></canvas></div></div>
     <div class="card"><h2>Monthly Spend</h2><div class="chart-wrap small"><canvas id="ttMonthlyChart"></canvas></div></div>
     <div class="card"><h2>Video Funnel</h2><div class="chart-wrap small"><canvas id="ttFunnelChart"></canvas></div></div>
+    <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>CPA</th><th>Completion</th></tr></thead><tbody><tr><td>مجموعة إعلانية 20260603111330</td><td>إنشاء عميل محتمل20260603131324</td><td>SAR 5,180.84</td><td>SAR 14.35</td><td>1.29%</td></tr><tr><td>مجموعة إعلانية 20260614012908</td><td>إنشاء عميل محتمل20260614132904</td><td>SAR 4,605.95</td><td>SAR 5.11</td><td>2.67%</td></tr><tr><td>مجموعة إعلانية 20260602053848</td><td>إنشاء عميل محتمل20260602073815</td><td>SAR 1,891.99</td><td>SAR 10.17</td><td>1.68%</td></tr><tr><td>طبيعي يدوي</td><td>إنشاء عميل محتمل20260615101250</td><td>SAR 1,442.48</td><td>SAR 2.20</td><td>4.08%</td></tr><tr><td>1863180790106370</td><td></td><td>SAR 961.30</td><td>SAR 8.01</td><td>1.03%</td></tr><tr><td>مجموعة إعلانية 20260614121620</td><td>إنشاء عميل محتمل20260614001615</td><td>SAR 783.68</td><td>SAR 9.33</td><td>0.40%</td></tr><tr><td>مجموعة إعلانية 20260613015833</td><td>إنشاء عميل محتمل20260613015830</td><td>SAR 556.31</td><td>SAR 15.89</td><td>1.45%</td></tr><tr><td>1864420800190545</td><td></td><td>SAR 492.29</td><td>SAR 7.13</td><td>1.20%</td></tr><tr><td>مجموعة إعلانية 20260614124830</td><td>إنشاء عميل محتمل20260614124826</td><td>SAR 317.70</td><td>SAR 7.39</td><td>0.55%</td></tr><tr><td>مجموعة إعلانية 20260530010545</td><td>إنشاء عميل محتمل20260530130536</td><td>SAR 239.65</td><td>SAR 12.61</td><td>1.15%</td></tr></tbody></table></div></div>
   </div>
 
   <div class="grid-2">
-    <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>CPA</th><th>Completion</th></tr></thead><tbody><tr><td>مجموعة إعلانية 20260603111330</td><td>إنشاء عميل محتمل20260603131324</td><td>SAR 5,180.84</td><td>SAR 14.35</td><td>1.29%</td></tr><tr><td>مجموعة إعلانية 20260614012908</td><td>إنشاء عميل محتمل20260614132904</td><td>SAR 4,605.95</td><td>SAR 5.11</td><td>2.67%</td></tr><tr><td>مجموعة إعلانية 20260602053848</td><td>إنشاء عميل محتمل20260602073815</td><td>SAR 1,891.99</td><td>SAR 10.17</td><td>1.68%</td></tr><tr><td>طبيعي يدوي</td><td>إنشاء عميل محتمل20260615101250</td><td>SAR 1,442.48</td><td>SAR 2.20</td><td>4.08%</td></tr><tr><td>1863180790106370</td><td></td><td>SAR 961.30</td><td>SAR 8.01</td><td>1.03%</td></tr><tr><td>مجموعة إعلانية 20260614121620</td><td>إنشاء عميل محتمل20260614001615</td><td>SAR 783.68</td><td>SAR 9.33</td><td>0.40%</td></tr><tr><td>مجموعة إعلانية 20260613015833</td><td>إنشاء عميل محتمل20260613015830</td><td>SAR 556.31</td><td>SAR 15.89</td><td>1.45%</td></tr><tr><td>1864420800190545</td><td></td><td>SAR 492.29</td><td>SAR 7.13</td><td>1.20%</td></tr><tr><td>مجموعة إعلانية 20260614124830</td><td>إنشاء عميل محتمل20260614124826</td><td>SAR 317.70</td><td>SAR 7.39</td><td>0.55%</td></tr><tr><td>مجموعة إعلانية 20260530010545</td><td>إنشاء عميل محتمل20260530130536</td><td>SAR 239.65</td><td>SAR 12.61</td><td>1.15%</td></tr></tbody></table></div></div>
     <div class="card"><h2>Top Ads</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad</th><th>Campaign</th><th>Spend</th><th>CPA</th><th>CTR</th></tr></thead><tbody><tr><td>1867968348311794</td><td></td><td>SAR 2,529.36</td><td>SAR 5.81</td><td>0.43%</td></tr><tr><td>1868046628265537</td><td></td><td>SAR 1,253.92</td><td>SAR 2.04</td><td>1.83%</td></tr><tr><td>1867968348312818</td><td></td><td>SAR 856.48</td><td>SAR 3.63</td><td>1.21%</td></tr><tr><td>1867968347288625</td><td></td><td>SAR 543.64</td><td>SAR 3.26</td><td>1.05%</td></tr><tr><td>1867918815246353</td><td></td><td>SAR 372.28</td><td>SAR 10.06</td><td>0.24%</td></tr><tr><td>1867834074414290</td><td></td><td>SAR 286.17</td><td>SAR 22.01</td><td>0.60%</td></tr><tr><td>1867918815246369</td><td></td><td>SAR 272.93</td><td>SAR 7.80</td><td>0.30%</td></tr><tr><td>1867834074415250</td><td></td><td>SAR 231.82</td><td>SAR 10.54</td><td>0.92%</td></tr><tr><td>1867968348312802</td><td></td><td>SAR 185.24</td><td>SAR 14.25</td><td>0.34%</td></tr><tr><td>1867965998860482</td><td></td><td>SAR 170.91</td><td>SAR 9.00</td><td>0.29%</td></tr></tbody></table></div></div>
+    <div class="card"><h2>Best CTR Ads</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad</th><th>Campaign</th><th>Impr.</th><th>CTR</th></tr></thead><tbody><tr><td>اسم الإعلان2026-06-17 17:00:14</td><td>إنشاء عميل محتمل20260617165349</td><td>1,610</td><td>3.23%</td></tr><tr><td>1868046628265537</td><td></td><td>298,089</td><td>1.83%</td></tr><tr><td>بسام (3)_7B2T4bXs.mp4_2026-06-16 19:38</td><td>إنشاء عميل محتمل20260616192430</td><td>10,490</td><td>1.51%</td></tr><tr><td>اسم الإعلان2026-06-17 17:00:12</td><td>إنشاء عميل محتمل20260617165349</td><td>1,375</td><td>1.31%</td></tr><tr><td>1867968348312818</td><td></td><td>219,586</td><td>1.21%</td></tr></tbody></table></div></div>
   </div>
 
   <div class="grid-2">
@@ -1285,25 +1297,62 @@
     <div class="card"><h2>Worst CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>1860570324600993</td><td>SAR 57.24</td><td>1</td><td>SAR 57.24</td></tr><tr><td>إنشاء عميل محتمل20260611233124</td><td>SAR 105.27</td><td>3</td><td>SAR 35.09</td></tr><tr><td>إنشاء عميل محتمل20260611234527</td><td>SAR 127.07</td><td>4</td><td>SAR 31.77</td></tr><tr><td>1858664765045921</td><td>SAR 55.74</td><td>2</td><td>SAR 27.87</td></tr><tr><td>1862263203340465</td><td>SAR 78.71</td><td>3</td><td>SAR 26.24</td></tr></tbody></table></div></div>
   </div>
 </div>
-<div class="footer">Generated on 2026-06-18 13:08</div>
+<div class="footer">Generated on 2026-06-18 14:44</div>
 <script>
 const ttDailyLabels = ["2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-23", "2026-05-24", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-05-30", "2026-05-31", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"];
 const ttDailySpend = [1644.14, 533.21, 1.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1167.82, 1291.84, 384.18, 249.58, 2110.08, 2304.33, 2574.63, 832.46, 0.0, 0.0, 106.4, 167.35, 53.08, 538.5, 704.58, 3723.7, 3000.0, 522.09, 157.39, 30.84];
 const ttDailyConv = [223, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131, 128, 1, 0, 207, 163, 193, 54, 1, 0, 4, 11, 5, 15, 41, 444, 992, 264, 20, 4];
 const ttDowLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const ttDowSpend = [3384.18, 2522.21, 2968.0299999999997, 2389.29, 3113.13, 2704.8599999999997, 5015.54];
+const ttDowCpa = [3.408036253776435, 5.136883910386965, 9.795478547854785, 13.891220930232558, 14.966971153846155, 11.968407079646017, 8.753123909249563];
 const ttFunnelLabels = ['Plays', '25%', '50%', '75%', '100%'];
 const ttFunnelData = [19329263, 1386062, 651422, 424359, 236121];
 const ttMonthLabels = ["2026-06", "2026-05"];
 const ttMonthSpend = [17459.190000000002, 4638.05];
-
+const ttHourlyLabels = [];
+const ttHourlySpend = [];
+const ttHourlyCpa = [];
 new Chart(document.getElementById('ttDailySpendChart'), {type:'line', data:{labels:ttDailyLabels, datasets:[{label:'Spend (SAR)', data:ttDailySpend, borderColor:'#000000', backgroundColor:'rgba(0,0,0,0.06)', fill:true, tension:0.3}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 new Chart(document.getElementById('ttDailyConvChart'), {type:'bar', data:{labels:ttDailyLabels, datasets:[{label:'Conversions', data:ttDailyConv, backgroundColor:'#000000', borderRadius:6}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
-new Chart(document.getElementById('ttDowChart'), {type:'bar', data:{labels:ttDowLabels, datasets:[{label:'Spend', data:ttDowSpend, backgroundColor:'#000000', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('ttDowChart'), {type:'bar', data:{labels:ttDowLabels, datasets:[{label:'CPA (SAR)', data:ttDowCpa, backgroundColor:'#e74c3c', borderRadius:8}, {label:'Spend', data:ttDowSpend, backgroundColor:'#000000', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('ttHourlyChart'), {type:'line', data:{labels:ttHourlyLabels, datasets:[{label:'Spend', data:ttHourlySpend, borderColor:'#45a29e', backgroundColor:'rgba(69,162,158,0.1)', fill:true, tension:0.3, yAxisID:'y'}, {label:'CPA', data:ttHourlyCpa, borderColor:'#e74c3c', backgroundColor:'#e74c3c', tension:0.3, yAxisID:'y1'}]}, options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true, title:{display:true, text:'Spend (SAR)'}}, y1:{beginAtZero:true, position:'right', title:{display:true, text:'CPA (SAR)'}}}, plugins:{legend:{position:'top'}}}});
 new Chart(document.getElementById('ttMonthlyChart'), {type:'bar', data:{labels:ttMonthLabels, datasets:[{label:'Spend', data:ttMonthSpend, backgroundColor:'#45a29e', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 new Chart(document.getElementById('ttFunnelChart'), {type:'bar', data:{labels:ttFunnelLabels, datasets:[{label:'Views', data:ttFunnelData, backgroundColor:['#000','#333','#555','#777','#999'], borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 </script>
 </body></html>
+
+<script>
+function applyFilters(platform){
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const status = document.getElementById('statusFilter').value;
+  const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
+  const tableIds = {
+    tiktok: 'tiktokCampaignsTable',
+    meta: 'metaCampaignsTable',
+    google: 'googleCampaignsTable'
+  };
+  const table = document.getElementById(tableIds[platform]);
+  if(!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    let show = true;
+    const rowStatus = row.getAttribute('data-status') || '';
+    const rowSpend = parseFloat(row.getAttribute('data-spend') || 0);
+    if(status === 'active' && !(rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(status === 'inactive' && (rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(rowSpend < minSpend) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+function resetFilters(platform){
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('minSpend').value = '';
+  applyFilters(platform);
+}
+</script>
 
 <script>
 function applyFilters(platform){

@@ -149,4 +149,68 @@ curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
   -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":19,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT segments.day_of_week, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM campaign WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
   > "$RAW_DIR/google_ads_dayofweek.json"
 
+
+echo "Fetching Meta age insights (365d)..."
+curl -s -X POST "https://meta-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":20,\"params\":{\"name\":\"get_insights\",\"arguments\":{\"account_id\":\"$META_ACCOUNT_ID\",\"level\":\"campaign\",\"date_preset\":\"last_365d\",\"fields\":[\"campaign_id\",\"campaign_name\",\"spend\",\"impressions\",\"clicks\",\"actions\"],\"breakdown\":\"age\",\"limit\":200}}}" \
+  > "$RAW_DIR/meta_age.json"
+
+echo "Fetching Meta gender insights (365d)..."
+curl -s -X POST "https://meta-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":21,\"params\":{\"name\":\"get_insights\",\"arguments\":{\"account_id\":\"$META_ACCOUNT_ID\",\"level\":\"campaign\",\"date_preset\":\"last_365d\",\"fields\":[\"campaign_id\",\"campaign_name\",\"spend\",\"impressions\",\"clicks\",\"actions\"],\"breakdown\":\"gender\",\"limit\":200}}}" \
+  > "$RAW_DIR/meta_gender.json"
+
+echo "Fetching Meta region insights (365d)..."
+curl -s -X POST "https://meta-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":22,\"params\":{\"name\":\"get_insights\",\"arguments\":{\"account_id\":\"$META_ACCOUNT_ID\",\"level\":\"campaign\",\"date_preset\":\"last_365d\",\"fields\":[\"campaign_id\",\"campaign_name\",\"spend\",\"impressions\",\"clicks\",\"actions\"],\"breakdown\":\"region\",\"limit\":200}}}" \
+  > "$RAW_DIR/meta_region.json"
+
+echo "Fetching Meta hourly insights (last 7d)..."
+curl -s -X POST "https://meta-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":23,\"params\":{\"name\":\"get_insights\",\"arguments\":{\"account_id\":\"$META_ACCOUNT_ID\",\"level\":\"campaign\",\"date_preset\":\"last_7d\",\"fields\":[\"campaign_id\",\"campaign_name\",\"spend\",\"impressions\",\"clicks\",\"actions\"],\"breakdown\":\"hourly_stats_aggregated_by_advertiser_time_zone\",\"limit\":200}}}" \
+  > "$RAW_DIR/meta_hourly.json"
+
+echo "Fetching TikTok hourly insights (yesterday)..."
+YESTERDAY=$(date -u -v-1d +%Y-%m-%d)
+curl -s -X POST "https://tiktok-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":23,\"params\":{\"name\":\"get_tiktok_insights\",\"arguments\":{\"advertiser_id\":\"$TIKTOK_ADVERTISER\",\"report_type\":\"BASIC\",\"data_level\":\"AUCTION_ADVERTISER\",\"dimensions\":[\"stat_time_hour\"],\"metrics\":[\"spend\",\"impressions\",\"clicks\",\"conversion\",\"cost_per_conversion\"],\"start_date\":\"$YESTERDAY\",\"end_date\":\"$YESTERDAY\"}}}" \
+  > "$RAW_DIR/tiktok_insights_hourly.json"
+
+echo "Fetching Google Ads age range GAQL data..."
+curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":27,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT segments.age_range, ad_group.id, ad_group.name, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM ad_group WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
+  > "$RAW_DIR/google_ads_age.json"
+
+echo "Fetching Google Ads gender GAQL data..."
+curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":28,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT segments.gender, ad_group.id, ad_group.name, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM ad_group WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
+  > "$RAW_DIR/google_ads_gender.json"
+
+echo "Fetching Google Ads location GAQL data..."
+curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":29,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT geographic_view.country_criterion_id, geographic_view.location_type, segments.geo_target_constant, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM geographic_view WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
+  > "$RAW_DIR/google_ads_location.json"
+
+echo "Fetching Google Ads hour-of-day GAQL data..."
+curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":30,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT segments.day_of_week, segments.hour, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM campaign WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
+  > "$RAW_DIR/google_ads_hourly.json"
 echo "Done. Raw data saved to $RAW_DIR"

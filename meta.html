@@ -295,7 +295,12 @@
       gap: 0.5rem;
       font-size: 1.15rem;
     }
-    .platform-card .platform-icon { width: 28px; height: 28px; }
+    .platform-card .platform-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .hero .platform-icon { color: #fff; width: 26px; height: 26px; }
+    .platform-card.tiktok .platform-icon { color: #000; }
+    .platform-card.meta .platform-icon { color: #1877f2; }
+    .platform-card.google .platform-icon { color: #4285f4; }
+    .card h2 .platform-icon { width: 20px; height: 20px; color: var(--wc-slate); }
     .platform-card .metric-row {
       display: flex;
       justify-content: space-between;
@@ -366,7 +371,7 @@
 </nav>
 
 <div class="hero">
-  <h1><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" class="platform-icon" alt="Meta"> Meta Ads</h1>
+  <h1><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.1 4.388 23.095 10.125 24v-8.437H7.078v-3.49h3.047V9.297c0-3.017 1.792-4.688 4.533-4.688 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.875v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.095 24 18.1 24 12.073z"/></svg> Meta Ads</h1>
   <p>Account: 255 (ID act_908730431603058)</p>
 </div>
 <div class="container">
@@ -638,23 +643,73 @@
     <div class="card"><h2>Conversions by Campaign</h2><div class="chart-wrap"><canvas id="metaConvChart"></canvas></div></div>
   </div>
 
+  <h2 class="section-title">Audience Performance</h2>
+  <div class="grid-3">
+    <div class="card"><h2>Age Groups</h2><div class="no-data">No data available.</div></div>
+    <div class="card"><h2>Gender</h2><div class="no-data">No data available.</div></div>
+    <div class="card"><h2>Top Regions</h2><div class="no-data">No data available.</div></div>
+  </div>
+
+  <h2 class="section-title">Timing & Efficiency</h2>
+  <div class="grid-3">
+    
+    <div class="card"><h2>Hourly Performance (Last 7d)</h2><div class="chart-wrap small"><canvas id="metaHourlyChart"></canvas></div></div>
+    <div class="card"><h2>Best CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>حملة إعلانية جديدة بهدف التفاعل</td><td>SAR 535.96</td><td>233</td><td>SAR 2.30</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 1,116.82</td><td>403</td><td>SAR 2.77</td></tr><tr><td>ماهر</td><td>SAR 721.91</td><td>186</td><td>SAR 3.88</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 442.24</td><td>109</td><td>SAR 4.06</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 269.84</td><td>60</td><td>SAR 4.50</td></tr></tbody></table></div></div>
+  </div>
+
   <h2 class="section-title">Targeting Snapshot</h2>
   <div class="card"><h2>Ad Sets</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Set</th><th>Campaign</th><th>Status</th><th>Budget</th><th>Age</th><th>Countries</th><th>Interests</th></tr></thead><tbody><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202471799</td><td><span class="status paused">Paused</span></td><td>SAR 0.00</td><td>18-65</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202455230</td><td><span class="status paused">Paused</span></td><td>SAR 0.00</td><td>18-65</td><td>SA</td><td>Vehicles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202449759</td><td><span class="status active">Active</span></td><td>SAR 0.00</td><td>18-65</td><td>SA</td><td>Vehicles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202449591</td><td><span class="status active">Active</span></td><td>SAR 120.00</td><td>18-65</td><td>SA</td><td>Vehicles, Automobiles, Motor vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202441936</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202441779</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Automobiles, Luxury vehicle</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202433284</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Vehicles, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202432879</td><td><span class="status active">Active</span></td><td>SAR 300.00</td><td>18-60</td><td>SA</td><td>Vehicles, Financial services, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف التفاعل</td><td>1202412686</td><td><span class="status paused">Paused</span></td><td>SAR 500.00</td><td>18-65</td><td>SA</td><td>Financial services, Automobiles</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202409205</td><td><span class="status paused">Paused</span></td><td>SAR 300.00</td><td>18-65</td><td>SA</td><td>Finance, Vehicles, Automobiles, Toyota Camry, Hyundai</td></tr><tr><td>مجموعة إعلانية جديدة بهدف العملاء ال</td><td>1202408586</td><td><span class="status paused">Paused</span></td><td>SAR 200.00</td><td>18-65</td><td>SA</td><td>Finance, Vehicles, Automobiles, Hyundai Elantra, Hyundai</td></tr><tr><td>مجموعة إعلانية جديدة بهدف التفاعل</td><td>1202408205</td><td><span class="status active">Active</span></td><td>SAR 100.00</td><td>18-65</td><td>SA</td><td>Finance, Vehicles, Kia Motors, Financial services, Automobiles</td></tr></tbody></table></div></div>
 
-  <div class="grid-2">
-    <div class="card"><h2>Best CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>حملة إعلانية جديدة بهدف التفاعل</td><td>SAR 535.96</td><td>233</td><td>SAR 2.30</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 1,116.82</td><td>403</td><td>SAR 2.77</td></tr><tr><td>ماهر</td><td>SAR 721.91</td><td>186</td><td>SAR 3.88</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 442.24</td><td>109</td><td>SAR 4.06</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 269.84</td><td>60</td><td>SAR 4.50</td></tr></tbody></table></div></div>
-    <div class="card"><h2>Worst CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 92.63</td><td>2</td><td>SAR 46.31</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 233.70</td><td>8</td><td>SAR 29.21</td></tr><tr><td>‏حملة إعلانية جديدة بهدف العملاء المحتمل</td><td>SAR 755.27</td><td>38</td><td>SAR 19.88</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 69.52</td><td>4</td><td>SAR 17.38</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 812.69</td><td>67</td><td>SAR 12.13</td></tr></tbody></table></div></div>
-  </div>
+  <div class="card"><h2>Worst CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPA</th></tr></thead><tbody><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 92.63</td><td>2</td><td>SAR 46.31</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 233.70</td><td>8</td><td>SAR 29.21</td></tr><tr><td>‏حملة إعلانية جديدة بهدف العملاء المحتمل</td><td>SAR 755.27</td><td>38</td><td>SAR 19.88</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 69.52</td><td>4</td><td>SAR 17.38</td></tr><tr><td>حملة إعلانية جديدة بهدف العملاء المحتملو</td><td>SAR 812.69</td><td>67</td><td>SAR 12.13</td></tr></tbody></table></div></div>
 </div>
-<div class="footer">Generated on 2026-06-18 13:08</div>
+<div class="footer">Generated on 2026-06-18 14:44</div>
 <script>
 const metaLabels = ["2", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u200f\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644", "\u0645\u0627\u0647\u0631", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u062a\u0641\u0627\u0639", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u062a\u0641\u0627\u0639", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627", "\u062d\u0645\u0644\u0629 \u0625\u0639\u0644\u0627\u0646\u064a\u0629 \u062c\u062f\u064a\u062f\u0629 \u0628\u0647\u062f\u0641 \u0627\u0644\u0639\u0645\u0644\u0627"];
 const metaSpend = [2692.95, 1116.82, 812.69, 755.27, 721.91, 565.44, 535.96, 447.02, 442.24, 304.96, 269.84, 233.7, 92.63, 69.52, 33.47];
 const metaConv = [399, 403, 67, 38, 186, 83, 233, 45, 109, 62, 60, 8, 2, 4, 0];
+const metaCpa = [6.749248120300751, 2.771265508684863, 12.129701492537315, 19.87552631578947, 3.8812365591397846, 6.812530120481928, 2.300257510729614, 9.933777777777777, 4.057247706422018, 4.918709677419354, 4.497333333333333, 29.2125, 46.315, 17.38, 0];
+const metaHourlyLabels = [];
+const metaHourlySpend = [];
+const metaHourlyCpa = [];
 new Chart(document.getElementById('metaSpendChart'), {type:'bar', data:{labels:metaLabels, datasets:[{label:'Spend (SAR)', data:metaSpend, backgroundColor:'#1877f2', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 new Chart(document.getElementById('metaConvChart'), {type:'bar', data:{labels:metaLabels, datasets:[{label:'Leads', data:metaConv, backgroundColor:'#42b72a', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('metaCpaChart'), {type:'bar', data:{labels:metaLabels, datasets:[{label:'CPA (SAR)', data:metaCpa, backgroundColor:'#e74c3c', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true, text:'CPA (SAR)'}}}}});
+new Chart(document.getElementById('metaHourlyChart'), {type:'line', data:{labels:metaHourlyLabels, datasets:[{label:'Spend', data:metaHourlySpend, borderColor:'#1877f2', backgroundColor:'rgba(24,119,242,0.1)', fill:true, tension:0.3, yAxisID:'y'}, {label:'CPA', data:metaHourlyCpa, borderColor:'#e74c3c', backgroundColor:'#e74c3c', tension:0.3, yAxisID:'y1'}]}, options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true, title:{display:true, text:'Spend (SAR)'}}, y1:{beginAtZero:true, position:'right', title:{display:true, text:'CPA (SAR)'}}}, plugins:{legend:{position:'top'}}}});
 </script>
 </body></html>
+
+<script>
+function applyFilters(platform){
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const status = document.getElementById('statusFilter').value;
+  const minSpend = parseFloat(document.getElementById('minSpend').value || 0);
+  const tableIds = {
+    tiktok: 'tiktokCampaignsTable',
+    meta: 'metaCampaignsTable',
+    google: 'googleCampaignsTable'
+  };
+  const table = document.getElementById(tableIds[platform]);
+  if(!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    let show = true;
+    const rowStatus = row.getAttribute('data-status') || '';
+    const rowSpend = parseFloat(row.getAttribute('data-spend') || 0);
+    if(status === 'active' && !(rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(status === 'inactive' && (rowStatus.includes('enable') || rowStatus.includes('active'))) show = false;
+    if(rowSpend < minSpend) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+function resetFilters(platform){
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('minSpend').value = '';
+  applyFilters(platform);
+}
+</script>
 
 <script>
 function applyFilters(platform){

@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add raw/ index.html tiktok.html meta.html google.html assets/
+          git add raw/ index.html tiktok.html meta.html google.html assets/ fetch_data.sh generate_html_report.py
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else

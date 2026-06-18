@@ -295,7 +295,12 @@
       gap: 0.5rem;
       font-size: 1.15rem;
     }
-    .platform-card .platform-icon { width: 28px; height: 28px; }
+    .platform-card .platform-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .hero .platform-icon { color: #fff; width: 26px; height: 26px; }
+    .platform-card.tiktok .platform-icon { color: #000; }
+    .platform-card.meta .platform-icon { color: #1877f2; }
+    .platform-card.google .platform-icon { color: #4285f4; }
+    .card h2 .platform-icon { width: 20px; height: 20px; color: var(--wc-slate); }
     .platform-card .metric-row {
       display: flex;
       justify-content: space-between;
@@ -377,38 +382,39 @@
     <div class="kpi"><div class="kpi-label">Platforms</div><div class="kpi-value">3</div></div>
   </div>
 
+  <h2 class="section-title">CPA Comparison by Platform</h2>
+  <div class="grid-2">
+    <div class="card"><h2>CPA by Platform</h2><div class="chart-wrap"><canvas id="cpaByPlatformChart"></canvas></div></div>
+    <div class="card"><h2>Spend vs Conversions</h2><div class="chart-wrap"><canvas id="spendVsConvChart"></canvas></div></div>
+  </div>
+
   <h2 class="section-title">Platform Breakdown</h2>
   <div class="platform-grid">
     
     <div class="platform-card tiktok">
-      <h3><img src="https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" class="platform-icon" alt="Tiktok"> TikTok</h3>
+      <h3><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg> TikTok</h3>
       <div class="metric-row"><span>Spend</span><span>SAR 127,850.18</span></div>
       <div class="metric-row"><span>Conversions</span><span>17,399</span></div>
       <div class="metric-row"><span>Campaigns</span><span>20 (2 active)</span></div>
-      <div class="metric-row"><span>CTR</span><span>0.01%</span></div>
+      <div class="metric-row"><span>CPA</span><span>SAR 7.35</span></div>
       <a href="tiktok.html">View TikTok report &rarr;</a>
     </div>
     <div class="platform-card meta">
-      <h3><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" class="platform-icon" alt="Meta"> Meta Ads</h3>
+      <h3><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.1 4.388 23.095 10.125 24v-8.437H7.078v-3.49h3.047V9.297c0-3.017 1.792-4.688 4.533-4.688 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.875v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.095 24 18.1 24 12.073z"/></svg> Meta Ads</h3>
       <div class="metric-row"><span>Spend</span><span>SAR 9,094.42</span></div>
       <div class="metric-row"><span>Conversions</span><span>1,699</span></div>
       <div class="metric-row"><span>Campaigns</span><span>13 (0 active)</span></div>
-      <div class="metric-row"><span>CTR</span><span>1.70%</span></div>
+      <div class="metric-row"><span>CPA</span><span>SAR 5.35</span></div>
       <a href="meta.html">View Meta report &rarr;</a>
     </div>
     <div class="platform-card google">
-      <h3><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="platform-icon" alt="Google"> Google Ads</h3>
+      <h3><svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google Ads</h3>
       <div class="metric-row"><span>Spend</span><span>SAR 3,233.56</span></div>
       <div class="metric-row"><span>Conversions</span><span>738</span></div>
       <div class="metric-row"><span>Campaigns</span><span>2 (1 active)</span></div>
-      <div class="metric-row"><span>CTR</span><span>9.31%</span></div>
+      <div class="metric-row"><span>CPA</span><span>SAR 4.38</span></div>
       <a href="google.html">View Google report &rarr;</a>
     </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card"><h2>Spend by Platform</h2><div class="chart-wrap"><canvas id="spendByPlatformChart"></canvas></div></div>
-    <div class="card"><h2>Conversions by Platform</h2><div class="chart-wrap"><canvas id="convByPlatformChart"></canvas></div></div>
   </div>
 
   <h2 class="section-title">Top Spend Campaigns by Platform</h2>
@@ -421,13 +427,16 @@
   <h2 class="section-title">Recommendations</h2>
   <div class="recommendation"><h4>Google ROAS below 2x</h4><p>Expand high-converting keywords/ad groups and review search terms report for waste.</p></div><div class="recommendation"><h4>Meta campaigns are paused</h4><p>Restart top-performing lead campaigns or reallocate budget to TikTok/Google.</p></div>
 </div>
-<div class="footer">Generated on 2026-06-18 13:08</div>
+<div class="footer">Generated on 2026-06-18 14:44</div>
 <script>
 const platformLabels = ["TikTok", "Meta", "Google"];
 const platformSpend = [127850.18, 9094.42, 3233.56];
 const platformConv = [17399, 1699, 738];
+const platformCpa = [7.35, 5.35, 4.38];
 const palette = ['#000000', '#1877f2', '#4285f4'];
 new Chart(document.getElementById('spendByPlatformChart'), {type:'doughnut', data:{labels:platformLabels, datasets:[{data:platformSpend, backgroundColor:palette.slice(0, platformLabels.length), borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}});
 new Chart(document.getElementById('convByPlatformChart'), {type:'bar', data:{labels:platformLabels, datasets:[{label:'Conversions', data:platformConv, backgroundColor:palette.slice(0, platformLabels.length), borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('cpaByPlatformChart'), {type:'bar', data:{labels:platformLabels, datasets:[{label:'CPA (SAR)', data:platformCpa, backgroundColor:['#e74c3c','#f39c12','#2ecc71'].slice(0, platformLabels.length), borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true, text:'CPA (SAR)'}}}}});
+new Chart(document.getElementById('spendVsConvChart'), {type:'bar', data:{labels:platformLabels, datasets:[{label:'Spend', data:platformSpend, backgroundColor:palette.slice(0, platformLabels.length), borderRadius:8, yAxisID:'y'}, {label:'Conversions', data:platformConv, backgroundColor:palette.slice(0, platformLabels.length).map(c=>c+'80'), borderRadius:8, yAxisID:'y1'}]}, options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true, title:{display:true, text:'Spend (SAR)'}}, y1:{beginAtZero:true, position:'right', title:{display:true, text:'Conversions'}}, x:{}}, plugins:{legend:{position:'top'}}}});
 </script>
 </body></html>
