@@ -781,14 +781,14 @@
 <div class="container">
   
 <div class="filters">
-  <label data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status
+  <label><span data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status</span>
     <select id="statusFilter" data-platform="tiktok">
       <option value="all" data-en="All" data-ar="الكل">All</option>
       <option value="active" data-en="Active / Enabled" data-ar="نشط / مفعّل">Active / Enabled</option>
       <option value="inactive" data-en="Paused / Disabled" data-ar="متوقف / معطل">Paused / Disabled</option>
     </select>
   </label>
-  <label data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)
+  <label><span data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)</span>
     <input type="number" id="minSpend" placeholder="0" data-platform="tiktok">
   </label>
   <button onclick="applyFilters('tiktok')" data-en="Apply Filters" data-ar="تطبيق الفلاتر">Apply Filters</button>
@@ -1695,7 +1695,7 @@
     <div class="card"><h2>Worst CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>1860570324600993</td><td>SAR 57.24</td><td>1</td><td>SAR 57.24</td></tr><tr><td>إنشاء عميل محتمل20260611233124</td><td>SAR 105.27</td><td>3</td><td>SAR 35.09</td></tr><tr><td>إنشاء عميل محتمل20260611234527</td><td>SAR 127.07</td><td>4</td><td>SAR 31.77</td></tr><tr><td>1858664765045921</td><td>SAR 55.74</td><td>2</td><td>SAR 27.87</td></tr><tr><td>1862263203340465</td><td>SAR 78.71</td><td>3</td><td>SAR 26.24</td></tr></tbody></table></div></div>
   </div>
 </div>
-<div class="footer" data-en="Generated on 2026-06-18 22:18" data-ar="تم الإنشاء في 2026-06-18 22:18">Generated on 2026-06-18 22:18</div>
+<div class="footer" data-en="Generated on 2026-06-19 10:22" data-ar="تم الإنشاء في 2026-06-19 10:22">Generated on 2026-06-19 10:22</div>
 <script>
 const ttDailyLabels = ["2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-23", "2026-05-24", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-05-30", "2026-05-31", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"];
 const ttDailySpend = [1644.14, 533.21, 1.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1167.82, 1291.84, 384.18, 249.58, 2110.08, 2304.33, 2574.63, 832.46, 0.0, 0.0, 106.4, 167.35, 53.08, 538.5, 704.58, 3723.7, 3000.0, 522.09, 157.39, 30.84];
@@ -1861,7 +1861,9 @@ document.addEventListener('DOMContentLoaded', () => {
     "Google": "جوجل", "TikTok": "تيك توك", "Meta": "ميتا",
     "Scale / volume driver": "محرك النطاق والحجم", "Audience test / retarget": "اختبار الجمهور / إعادة الاستهداف", "High-intent capture": "التقاط النية العالية",
     "View TikTok deep dive →": "عرض تحليل تيك توك العميق →", "View Meta deep dive →": "عرض تحليل ميتا العميق →", "View Google deep dive →": "عرض تحليل جوجل العميق →",
-    "Generated on": "تم الإنشاء في"
+    "Generated on": "تم الإنشاء في",
+    "Geo Insights": "رؤى جغرافية", "Spend by Location": "الإنفاق حسب الموقع", "Top Locations": "أهم المواقع",
+    "Spend by Region": "الإنفاق حسب المنطقة", "Location": "الموقع", "Region": "المنطقة"
   };
   const REVERSE = Object.fromEntries(Object.entries(DICT).map(([k, v]) => [v, k]));
 

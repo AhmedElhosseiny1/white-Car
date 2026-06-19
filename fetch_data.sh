@@ -150,6 +150,20 @@ curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
   > "$RAW_DIR/google_ads_dayofweek.json"
 
 
+echo "Fetching Google Ads geographic performance..."
+curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":31,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT geographic_view.country_criterion_id, geographic_view.location_type, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value FROM geographic_view WHERE segments.date BETWEEN '2025-06-18' AND '2026-06-18'\"}}}" \
+  > "$RAW_DIR/google_ads_geo.json"
+
+echo "Fetching Google Ads geo target constants..."
+curl -s -X POST "https://google-ads.mcp.pipeboard.co/?token=$TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"id\":32,\"params\":{\"name\":\"execute_google_ads_gaql_query\",\"arguments\":{\"customer_id\":\"$GOOGLE_CUSTOMER_ID\",\"query\":\"SELECT geo_target_constant.id, geo_target_constant.name, geo_target_constant.target_type FROM geo_target_constant WHERE geo_target_constant.status = 'ENABLED' AND geo_target_constant.target_type IN ('COUNTRY', 'PROVINCE', 'CITY')\"}}}" \
+  > "$RAW_DIR/google_ads_geo_targets.json"
+
 echo "Fetching Meta age insights (365d)..."
 curl -s -X POST "https://meta-ads.mcp.pipeboard.co/?token=$TOKEN" \
   -H "Content-Type: application/json" \

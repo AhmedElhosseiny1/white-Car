@@ -781,14 +781,14 @@
 <div class="container">
   
 <div class="filters">
-  <label data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status
+  <label><span data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status</span>
     <select id="statusFilter" data-platform="google">
       <option value="all" data-en="All" data-ar="الكل">All</option>
       <option value="active" data-en="Active / Enabled" data-ar="نشط / مفعّل">Active / Enabled</option>
       <option value="inactive" data-en="Paused / Disabled" data-ar="متوقف / معطل">Paused / Disabled</option>
     </select>
   </label>
-  <label data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)
+  <label><span data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)</span>
     <input type="number" id="minSpend" placeholder="0" data-platform="google">
   </label>
   <button onclick="applyFilters('google')" data-en="Apply Filters" data-ar="تطبيق الفلاتر">Apply Filters</button>
@@ -861,11 +861,13 @@
     <div class="card"><h2>Top Ad Groups</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Ad Group</th><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th><th>ROAS</th></tr></thead><tbody><tr><td>المجموعة الإعلانية رقم 1</td><td>29-2</td><td>SAR 2,912.07</td><td>732</td><td>SAR 3.98</td><td>0.25x</td></tr><tr><td>المجموعة الإعلانية رقم 1</td><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td><td>0.02x</td></tr></tbody></table></div></div>
   </div>
 
+  <h2 class="section-title">Geo Insights</h2><div class="card"><p class="muted" data-en="No geographic data available. Run fetch_data.sh to pull Google Ads geographic_view performance. If you are on the Pipeboard free plan, this may be empty until the weekly execution limit resets." data-ar="لا توجد بيانات جغرافية متاحة. قم بتشغيل fetch_data.sh لسحب بيانات الأداء الجغرافي من Google Ads. إذا كنت تستخدم خطة Pipeboard المجانية، قد يكون هذا فارغًا حتى تتم إعادة تعيين حد التنفيذ الأسبوعي.">No geographic data available. Run fetch_data.sh to pull Google Ads geographic_view performance. If you are on the Pipeboard free plan, this may be empty until the weekly execution limit resets.</p></div>
+
   <div class="card"><h2>Search Terms & Keyword Analysis</h2><p class="muted">Search-term and keyword-level data is not currently pulled from Google Ads. To complete this audit, fetch search_term_view and keyword_view with metrics.clicks, metrics.conversions, metrics.cost_micros, and metrics.conversions_value. This will reveal high-intent terms to scale and waste terms to negate.</p></div>
 
   <div class="card"><h2>Best CPA Campaigns</h2><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Campaign</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr></thead><tbody><tr><td>29-2</td><td>SAR 2,909.99</td><td>732</td><td>SAR 3.98</td></tr><tr><td>9-2</td><td>SAR 323.56</td><td>6</td><td>SAR 53.93</td></tr></tbody></table></div></div>
 </div>
-<div class="footer" data-en="Generated on 2026-06-18 22:18" data-ar="تم الإنشاء في 2026-06-18 22:18">Generated on 2026-06-18 22:18</div>
+<div class="footer" data-en="Generated on 2026-06-19 10:22" data-ar="تم الإنشاء في 2026-06-19 10:22">Generated on 2026-06-19 10:22</div>
 <script>
 const googleLabels = ["29-2", "9-2"];
 const googleSpend = [2909.994921, 323.564754];
@@ -877,6 +879,7 @@ new Chart(document.getElementById('googleSpendChart'), {type:'bar', data:{labels
 new Chart(document.getElementById('googleConvChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'Conversions', data:googleConv, backgroundColor:'#34a853', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
 new Chart(document.getElementById('googleCpaChart'), {type:'bar', data:{labels:googleLabels, datasets:[{label:'CPA (SAR)', data:googleCpa, backgroundColor:'#e74c3c', borderRadius:8}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true, text:'CPA (SAR)'}}}}});
 new Chart(document.getElementById('googleMonthlyChart'), {type:'line', data:{labels:googleMonthLabels, datasets:[{label:'Spend', data:googleMonthSpend, borderColor:'#34a853', backgroundColor:'rgba(52,168,83,0.1)', fill:true, tension:0.3}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+
 </script>
 </body></html>
 
@@ -1022,7 +1025,9 @@ document.addEventListener('DOMContentLoaded', () => {
     "Google": "جوجل", "TikTok": "تيك توك", "Meta": "ميتا",
     "Scale / volume driver": "محرك النطاق والحجم", "Audience test / retarget": "اختبار الجمهور / إعادة الاستهداف", "High-intent capture": "التقاط النية العالية",
     "View TikTok deep dive →": "عرض تحليل تيك توك العميق →", "View Meta deep dive →": "عرض تحليل ميتا العميق →", "View Google deep dive →": "عرض تحليل جوجل العميق →",
-    "Generated on": "تم الإنشاء في"
+    "Generated on": "تم الإنشاء في",
+    "Geo Insights": "رؤى جغرافية", "Spend by Location": "الإنفاق حسب الموقع", "Top Locations": "أهم المواقع",
+    "Spend by Region": "الإنفاق حسب المنطقة", "Location": "الموقع", "Region": "المنطقة"
   };
   const REVERSE = Object.fromEntries(Object.entries(DICT).map(([k, v]) => [v, k]));
 

@@ -470,6 +470,10 @@ def analyze_google_ads():
     adgroups_data, _ = parse_mcp("google_ads_adgroups.json")
     device_data, _ = parse_mcp("google_ads_device.json")
     dow_data, _ = parse_mcp("google_ads_dayofweek.json")
+    geo_data, _ = parse_mcp("google_ads_geo.json")
+    geo_target_data, _ = parse_mcp("google_ads_geo_targets.json")
+    geo_data = geo_data or {}
+    geo_target_data = geo_target_data or {}
 
     if err or not account_info:
         return None
@@ -627,6 +631,44 @@ def analyze_google_ads():
 
     top_weekdays = sorted(dow_rows, key=lambda x: (x["conversions"] > 0, -x["cpa"], -x["spend"]), reverse=True)
 
+    # Geographic performance
+    geo_names = {}
+    if geo_target_data:
+        for row in geo_target_data.get("results", []):
+            gtc = row.get("geoTargetConstant", {})
+            gid = str(gtc.get("id", ""))
+            if gid:
+                geo_names[gid] = gtc.get("name", gid)
+    geo_totals = defaultdict(lambda: {"spend": 0.0, "impressions": 0, "clicks": 0, "conversions": 0, "conversions_value": 0.0})
+    for row in geo_data.get("results", []):
+        gv = row.get("geographicView", {})
+        cid = str(gv.get("countryCriterionId", gv.get("country_criterion_id", "")))
+        if not cid:
+            cid = gv.get("resourceName", "Unknown")
+        name = geo_names.get(cid, cid)
+        m = row.get("metrics", {})
+        spend = float(m.get("costMicros", 0) or 0) / 1_000_000
+        impressions = int(float(m.get("impressions", 0) or 0))
+        clicks = int(float(m.get("clicks", 0) or 0))
+        conversions = int(float(m.get("conversions", 0) or 0))
+        conv_value = float(m.get("conversionsValue", 0) or 0)
+        geo_totals[name]["spend"] += spend
+        geo_totals[name]["impressions"] += impressions
+        geo_totals[name]["clicks"] += clicks
+        geo_totals[name]["conversions"] += conversions
+        geo_totals[name]["conversions_value"] += conv_value
+    geo_rows = []
+    for name, data in geo_totals.items():
+        geo_rows.append({
+            "location": name, "spend": data["spend"], "impressions": data["impressions"],
+            "clicks": data["clicks"], "conversions": data["conversions"], "conversions_value": data["conversions_value"],
+            "ctr": safe_div(data["clicks"], data["impressions"]),
+            "cpa": safe_div(data["spend"], data["conversions"], 0),
+            "roas": safe_div(data["conversions_value"], data["spend"], 0),
+            "conv_rate": safe_div(data["conversions"], data["clicks"]),
+        })
+    geo_rows = sorted(geo_rows, key=lambda x: x["spend"], reverse=True)[:15]
+
     return {
         "account": account, "total_campaigns": len(campaigns),
         "active_campaigns": len(active_campaigns), "inactive_campaigns": inactive_campaigns,
@@ -637,6 +679,7 @@ def analyze_google_ads():
         "top_adgroups": top_adgroups, "top_months": top_months,
         "device_rows": device_rows, "dow_rows": dow_rows, "top_weekdays": top_weekdays,
         "hourly_rows": hourly_rows, "heatmap_totals": heatmap_totals,
+        "geo_rows": geo_rows,
         "cpa": safe_div(total_spend, total_conversions, 0),
     }
 
@@ -1890,14 +1933,14 @@ def common_head(title, active_tab):
 def render_filters(platform):
     return f"""
 <div class="filters">
-  <label data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status
+  <label><span data-en="Campaign Status" data-ar="حالة الحملة">Campaign Status</span>
     <select id="statusFilter" data-platform="{platform}">
       <option value="all" data-en="All" data-ar="الكل">All</option>
       <option value="active" data-en="Active / Enabled" data-ar="نشط / مفعّل">Active / Enabled</option>
       <option value="inactive" data-en="Paused / Disabled" data-ar="متوقف / معطل">Paused / Disabled</option>
     </select>
   </label>
-  <label data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)
+  <label><span data-en="Min Spend (SAR)" data-ar="الحد الأدنى للإنفاق (ر.س)">Min Spend (SAR)</span>
     <input type="number" id="minSpend" placeholder="0" data-platform="{platform}">
   </label>
   <button onclick="applyFilters('{platform}')" data-en="Apply Filters" data-ar="تطبيق الفلاتر">Apply Filters</button>
@@ -2394,6 +2437,17 @@ def meta_page(data, logo_b64):
     hourly_labels = [f"{r['hour']:02d}:00" for r in data["hourly_rows"]]
     hourly_spend = [r["spend"] for r in data["hourly_rows"]]
     hourly_cpa = [r["cpa"] for r in data["hourly_rows"]]
+    region_labels = [r["key"][:30] for r in data["region_rows"][:10]]
+    region_spend = [r["spend"] for r in data["region_rows"][:10]]
+    region_cpa = [r["cpa"] for r in data["region_rows"][:10]]
+    chart_region = render_chart_card('Spend by Region', 'metaRegionChart') if data['region_rows'] else ''
+    meta_region_chart_js = ""
+    if data['region_rows']:
+        meta_region_chart_js = (
+            f"new Chart(document.getElementById('metaRegionChart'), {{type:'bar', data:{{labels:{json.dumps(region_labels)}, "
+            f"datasets:[{{label:'Spend (SAR)', data:{json.dumps(region_spend)}, backgroundColor:'#1877f2', borderRadius:8}}]}}, "
+            f"options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});"
+        )
 
     top_weekdays_html = render_simple_table(
         'Top Performing Weekdays (by CPA)',
@@ -2460,6 +2514,8 @@ def meta_page(data, logo_b64):
     {table_region}
   </div>
 
+  {chart_region}
+
   <h2 class="section-title">Timing & Efficiency</h2>
   <div class="grid-3">
     {top_weekdays}
@@ -2511,6 +2567,7 @@ new Chart(document.getElementById('metaHourlyChart'), {{type:'line', data:{{labe
         table_region=render_simple_table('Top Regions', ['Region', 'Spend', 'Leads', 'CPA', 'CTR'], [[r['key'], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), fmt_pct(r['ctr'])] for r in data['region_rows'][:10]]),
         top_weekdays=top_weekdays_html,
         chart_hourly=render_chart_card('Hourly Performance (Last 7d)', 'metaHourlyChart', small=True),
+        chart_region=chart_region,
         table_best_cpa=render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['best_cpa_campaigns']]),
         adset_table=render_simple_table('Ad Sets', ['Ad Set', 'Campaign', 'Status', 'Budget', 'Age', 'Optimization', 'Countries', 'Interests'], [[ag['name'][:36], ag['campaign_id'][:10], render_status(ag['status']), fmt_sar(ag['budget']), f"{ag['age_min']}-{ag['age_max']}", ag['bid_strategy'], ag['countries'], ag['interests']] for ag in data['adset_rows'][:15]]),
         table_worst_cpa=render_simple_table('Worst CPA Campaigns', ['Campaign', 'Spend', 'Leads', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['worst_cpa_campaigns']]),
@@ -2522,6 +2579,7 @@ new Chart(document.getElementById('metaHourlyChart'), {{type:'line', data:{{labe
         js_hourly_labels=json.dumps(hourly_labels),
         js_hourly_spend=json.dumps(hourly_spend),
         js_hourly_cpa=json.dumps(hourly_cpa),
+        meta_region_chart_js=meta_region_chart_js,
     )
     return common_head("White Car Ads Audit | Meta", "meta") + body + filter_script()
 
@@ -2534,6 +2592,35 @@ def google_page(data, logo_b64):
     cpa = [c["cpa"] for c in top_campaigns]
     month_labels = [m["month"] for m in data["top_months"]]
     month_spend = [m["spend"] for m in data["top_months"]]
+    geo_labels = [r["location"][:30] for r in data["geo_rows"]]
+    geo_spend = [r["spend"] for r in data["geo_rows"]]
+    geo_cpa = [r["cpa"] for r in data["geo_rows"]]
+
+    geo_html = ''
+    if data['geo_rows']:
+        geo_html = f"""
+        <h2 class="section-title">Geo Insights</h2>
+        <div class="grid-2">
+          {render_chart_card('Spend by Location', 'googleGeoChart')}
+          {render_simple_table('Top Locations', ['Location', 'Spend', 'Conv.', 'CPA', 'ROAS'], [[r['location'][:36], fmt_sar(r['spend']), fmt_num(r['conversions']), fmt_sar(r['cpa']), f"{{r['roas']:.2f}}x"] for r in data['geo_rows'][:10]])}
+        </div>
+        """
+    else:
+        geo_html = ('<h2 class="section-title">Geo Insights</h2><div class="card"><p class="muted" data-en="No geographic data available. '
+                    'Run fetch_data.sh to pull Google Ads geographic_view performance. If you are on the Pipeboard free plan, '
+                    'this may be empty until the weekly execution limit resets." '
+                    'data-ar="لا توجد بيانات جغرافية متاحة. قم بتشغيل fetch_data.sh لسحب بيانات الأداء الجغرافي من Google Ads. إذا كنت تستخدم خطة Pipeboard المجانية، '
+                    'قد يكون هذا فارغًا حتى تتم إعادة تعيين حد التنفيذ الأسبوعي.">No geographic data available. '
+                    'Run fetch_data.sh to pull Google Ads geographic_view performance. If you are on the Pipeboard free plan, '
+                    'this may be empty until the weekly execution limit resets.</p></div>')
+
+    google_geo_chart_js = ""
+    if data['geo_rows']:
+        google_geo_chart_js = (
+            f"new Chart(document.getElementById('googleGeoChart'), {{type:'bar', data:{{labels:{json.dumps(geo_labels)}, "
+            f"datasets:[{{label:'Spend (SAR)', data:{json.dumps(geo_spend)}, backgroundColor:'#34a853', borderRadius:8}}]}}, "
+            f"options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});"
+        )
 
     heatmap_html = render_heatmap('CPA Heatmap by Day & Hour', data['heatmap_totals'], 'cpa')
     top_weekdays_html = render_simple_table(
@@ -2607,6 +2694,8 @@ def google_page(data, logo_b64):
     {table_adgroups}
   </div>
 
+  {geo_html}
+
   {search_terms}
 
   {table_best_cpa}
@@ -2623,6 +2712,7 @@ new Chart(document.getElementById('googleSpendChart'), {{type:'bar', data:{{labe
 new Chart(document.getElementById('googleConvChart'), {{type:'bar', data:{{labels:googleLabels, datasets:[{{label:'Conversions', data:googleConv, backgroundColor:'#34a853', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
 new Chart(document.getElementById('googleCpaChart'), {{type:'bar', data:{{labels:googleLabels, datasets:[{{label:'CPA (SAR)', data:googleCpa, backgroundColor:'#e74c3c', borderRadius:8}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true, title:{{display:true, text:'CPA (SAR)'}}}}}}}}}});
 new Chart(document.getElementById('googleMonthlyChart'), {{type:'line', data:{{labels:googleMonthLabels, datasets:[{{label:'Spend', data:googleMonthSpend, borderColor:'#34a853', backgroundColor:'rgba(52,168,83,0.1)', fill:true, tension:0.3}}]}}, options:{{responsive:true, maintainAspectRatio:false, plugins:{{legend:{{display:false}}}}, scales:{{y:{{beginAtZero:true}}}}}}}});
+{google_geo_chart_js}
 </script>
 </body></html>
 """.format(
@@ -2651,6 +2741,7 @@ new Chart(document.getElementById('googleMonthlyChart'), {{type:'line', data:{{l
         table_adgroups=render_simple_table('Top Ad Groups', ['Ad Group', 'Campaign', 'Spend', 'Conv.', 'CPA', 'ROAS'], [[ag['name'][:36], ag['campaign'][:30], fmt_sar(ag['spend']), fmt_num(ag['conversions']), fmt_sar(ag['cpa'] if ag['conversions'] else 0), f"{ag['roas']:.2f}x"] for ag in data['top_adgroups'][:15]]),
         search_terms=search_terms_note,
         table_best_cpa=render_simple_table('Best CPA Campaigns', ['Campaign', 'Spend', 'Conv.', 'CPA'], [[c['name'][:40], fmt_sar(c['spend']), fmt_num(c['conversions']), fmt_sar(c['cpa'])] for c in data['best_cpa_campaigns']]),
+        geo_html=geo_html,
         generated=datetime.now().strftime('%Y-%m-%d %H:%M'),
         js_labels=json.dumps(labels),
         js_spend=json.dumps(spend),
@@ -2658,6 +2749,7 @@ new Chart(document.getElementById('googleMonthlyChart'), {{type:'line', data:{{l
         js_cpa=json.dumps(cpa),
         js_month_labels=json.dumps(month_labels),
         js_month_spend=json.dumps(month_spend),
+        google_geo_chart_js=google_geo_chart_js,
     )
     return common_head("White Car Ads Audit | Google Ads", "google") + body + filter_script()
 
@@ -2806,7 +2898,9 @@ document.addEventListener('DOMContentLoaded', () => {
     "Google": "جوجل", "TikTok": "تيك توك", "Meta": "ميتا",
     "Scale / volume driver": "محرك النطاق والحجم", "Audience test / retarget": "اختبار الجمهور / إعادة الاستهداف", "High-intent capture": "التقاط النية العالية",
     "View TikTok deep dive →": "عرض تحليل تيك توك العميق →", "View Meta deep dive →": "عرض تحليل ميتا العميق →", "View Google deep dive →": "عرض تحليل جوجل العميق →",
-    "Generated on": "تم الإنشاء في"
+    "Generated on": "تم الإنشاء في",
+    "Geo Insights": "رؤى جغرافية", "Spend by Location": "الإنفاق حسب الموقع", "Top Locations": "أهم المواقع",
+    "Spend by Region": "الإنفاق حسب المنطقة", "Location": "الموقع", "Region": "المنطقة"
   };
   const REVERSE = Object.fromEntries(Object.entries(DICT).map(([k, v]) => [v, k]));
 
